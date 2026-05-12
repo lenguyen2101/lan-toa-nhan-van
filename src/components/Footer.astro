@@ -1,0 +1,150 @@
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <img src="/images/logo.webp" alt="Quỹ Khởi Sự Từ Tâm" class="footer-logo" />
+      <div class="footer-brand-text">
+        <strong>Quỹ Khởi Sự Từ Tâm</strong>
+        <p>Lan toả nhân văn — Đồng hành gây quỹ học bổng "Tự lực vì chính tôi".</p>
+      </div>
+    </div>
+
+    <div class="footer-contact">
+      <h4>Liên hệ</h4>
+      <ul>
+        <li><span>Địa chỉ:</span> 219 Xô Viết Nghệ Tĩnh, Phường Gia Định, TP. Hồ Chí Minh</li>
+        <li><span>Hotline:</span> <a href="tel:0933039678">0933 039 678</a> · <a href="tel:02747303968">(0274) 730 3968</a></li>
+        <li><span>Email:</span> <a href="mailto:info@quykhoisututam.com">info@quykhoisututam.com</a></li>
+        <li><span>Website:</span> <a href="https://quykhoisututam.com" target="_blank" rel="noopener">quykhoisututam.com</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-links">
+      <h4>Dự án</h4>
+      <ul>
+        <li><a href="https://quykhoisututam.com/hoc-bong-tu-luc-vi-chinh-toi/" target="_blank" rel="noopener">Học bổng Tự lực vì chính tôi</a></li>
+        <li><a href="https://quykhoisututam.com/du-an-song-chua-lanh/" target="_blank" rel="noopener">Dự án Sóng Chữa Lành</a></li>
+        <li><a href="https://quykhoisututam.com/" target="_blank" rel="noopener">An sinh xã hội</a></li>
+        <li><a href="https://quykhoisututam.com/du-an-chap-canh-vuon-xa/" target="_blank" rel="noopener">Dự án Chắp Cánh Vươn Xa</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="container">
+      <span>© {currentYear} Quỹ Khởi Sự Từ Tâm. Tất cả quyền được bảo lưu.</span>
+      <span class="footer-tag">Mỗi cuốn sách — một cơ hội học tập.</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: linear-gradient(180deg, var(--color-bg-alt) 0%, #FFEFD6 100%);
+    padding-top: 64px;
+    border-top: 1px solid var(--color-border);
+  }
+  .footer-inner {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 48px;
+    padding-bottom: 48px;
+  }
+
+  .footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .footer-logo {
+    width: auto;
+    max-width: 180px;
+    height: 56px;
+    object-fit: contain;
+    object-position: left center;
+  }
+  .footer-brand-text strong {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 6px;
+    color: var(--color-text);
+  }
+  .footer-brand-text p {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    line-height: 1.55;
+    max-width: 320px;
+  }
+
+  .footer h4 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-primary);
+    margin-bottom: 14px;
+  }
+  .footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .footer li {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+  }
+  .footer li span {
+    color: var(--color-text);
+    font-weight: 500;
+  }
+  .footer li a {
+    color: var(--color-text);
+    transition: color 0.15s ease;
+  }
+  .footer li a:hover {
+    color: var(--color-primary);
+  }
+
+  .footer-bottom {
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 18px 0;
+  }
+  .footer-bottom .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    color: var(--color-text-muted);
+  }
+  .footer-tag {
+    font-style: italic;
+    color: var(--color-primary-dark);
+  }
+
+  @media (max-width: 800px) {
+    .footer-inner {
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    .footer-brand {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (max-width: 520px) {
+    .footer-inner {
+      grid-template-columns: 1fr;
+    }
+    .footer-bottom .container {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+</style>

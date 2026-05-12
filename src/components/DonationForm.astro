@@ -1,0 +1,1429 @@
+---
+import { books, ebookTiers } from '../data/books';
+
+const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
+---
+
+<section class="section donation" id="dang-ky">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Hoàn tất ủng hộ</span>
+      <h2 class="section-title">
+        Trao gửi <em>yêu thương</em> — Nhận lại tri thức.
+      </h2>
+      <p class="section-lead">
+        Vui lòng chuyển khoản theo thông tin bên trái, sau đó điền form đăng ký để chúng tôi gửi sách / ebook đến bạn.
+      </p>
+    </div>
+
+    <div class="donation-grid">
+      <!-- LEFT: Payment info -->
+      <aside class="payment-card">
+        <h3 class="payment-title">Thông tin chuyển khoản</h3>
+
+        <div class="bank-row">
+          <span class="bank-label">Ngân hàng</span>
+          <span class="bank-value">MB Bank (Quân Đội)</span>
+        </div>
+        <div class="bank-row">
+          <span class="bank-label">Số tài khoản</span>
+          <button class="copyable" type="button" data-copy="3103xxxxxxx">
+            <span class="bank-value mono" id="bank-account">3103xxxxxxx</span>
+            <span class="copy-hint">Sao chép</span>
+          </button>
+        </div>
+        <div class="bank-row">
+          <span class="bank-label">Chủ tài khoản</span>
+          <span class="bank-value">QUỸ KHỞI SỰ TỪ TÂM</span>
+        </div>
+        <div class="bank-row">
+          <span class="bank-label">Nội dung CK</span>
+          <button class="copyable" type="button" data-copy="UNGHO [Họ tên] [SĐT]">
+            <span class="bank-value mono">UNGHO [Họ tên] [SĐT]</span>
+            <span class="copy-hint">Sao chép</span>
+          </button>
+        </div>
+
+        <div class="qr-wrap">
+          <button class="qr-btn" type="button" id="qr-zoom-btn" aria-label="Phóng to mã QR">
+            <div class="qr-img-wrap">
+              <img src="/images/qr-code.png" alt="Mã QR chuyển khoản" onerror="this.style.display='none'; this.parentElement.classList.add('no-qr');" />
+              <div class="qr-fallback">
+                <span>QR<br/>Code</span>
+                <small>Tải lên ảnh QR vào<br/>/public/images/qr-code.png</small>
+              </div>
+            </div>
+            <span class="qr-hint">Bấm để phóng to</span>
+          </button>
+        </div>
+
+        <p class="payment-note">
+          Sau khi chuyển khoản, vui lòng điền form bên cạnh và bấm "Xác nhận đã chuyển khoản". Quỹ sẽ liên hệ trong vòng 1–2 ngày làm việc.
+        </p>
+      </aside>
+
+      <!-- RIGHT: Form -->
+      <form class="donation-form" id="donation-form" novalidate>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-name">Họ và tên *</label>
+            <input id="f-name" name="fullName" type="text" required autocomplete="name" placeholder="Nguyễn Văn A" />
+            <small class="error" data-error-for="fullName"></small>
+          </div>
+          <div class="field">
+            <label for="f-phone">Số điện thoại *</label>
+            <input id="f-phone" name="phone" type="tel" required autocomplete="tel" placeholder="09xx xxx xxx" />
+            <small class="error" data-error-for="phone"></small>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-email">Email * <span class="hint">(Bắt buộc để nhận Ebook)</span></label>
+          <input id="f-email" name="email" type="email" required autocomplete="email" placeholder="email@example.com" />
+          <small class="error" data-error-for="email"></small>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="f-type-trigger">Hình thức ủng hộ *</label>
+            <div class="custom-select" id="f-type-wrap" data-name="donationType">
+              <button type="button" class="cs-trigger" id="f-type-trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="cs-value is-placeholder">-- Chọn hình thức --</span>
+                <svg class="cs-arrow" viewBox="0 0 12 8" width="12" height="8" aria-hidden="true">
+                  <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+              </button>
+              <ul class="cs-options" role="listbox" hidden>
+                <li role="option" data-value="paper">Sách giấy</li>
+                <li role="option" data-value="ebook">Ebook</li>
+                <li role="option" data-value="both">Cả hai</li>
+              </ul>
+              <input type="hidden" name="donationType" />
+            </div>
+            <small class="error" data-error-for="donationType"></small>
+          </div>
+          <div class="field">
+            <label for="f-book-trigger">Cuốn sách quan tâm *</label>
+            <div class="custom-select" id="f-book-wrap" data-name="book">
+              <button type="button" class="cs-trigger" id="f-book-trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="cs-value is-placeholder">-- Chọn sách --</span>
+                <svg class="cs-arrow" viewBox="0 0 12 8" width="12" height="8" aria-hidden="true">
+                  <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+              </button>
+              <ul class="cs-options" role="listbox" hidden>
+                {books.map((b) => (
+                  <li role="option" data-value={b.id} data-paper-price={b.paperPrice}>{b.title}</li>
+                ))}
+              </ul>
+              <input type="hidden" name="book" />
+            </div>
+            <small class="error" data-error-for="book"></small>
+          </div>
+        </div>
+
+        <!-- Paper price box (editorial bookplate) -->
+        <div class="paper-box" id="paper-box" hidden>
+          <div class="paper-box-inner">
+            <div class="paper-head">
+              <span class="paper-eyebrow">
+                <span class="ornament">✦</span>
+                Ấn bản · Sách giấy
+              </span>
+              <span class="paper-edition">Tủ Sách Tri Thức · 2026</span>
+            </div>
+
+            <div class="paper-body">
+              <div class="paper-left">
+                <span class="paper-empty" id="paper-empty">
+                  <em>Vui lòng chọn sách</em>
+                  <small>để xem mức ủng hộ</small>
+                </span>
+              </div>
+              <div class="paper-right">
+                <span class="paper-price" id="paper-price-display" hidden></span>
+                <span class="paper-price-currency" id="paper-price-currency" hidden>đồng</span>
+              </div>
+            </div>
+
+            <div class="paper-perf" aria-hidden="true"></div>
+
+            <div class="paper-foot">
+              <span class="paper-foot-item">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2 8.5h4l2-5 2 8 1.5-3h2.5"/>
+                </svg>
+                Miễn phí giao hàng toàn quốc
+              </span>
+              <span class="paper-foot-item">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="2" y="3" width="12" height="11" rx="1"/>
+                  <path d="M5 6.5h6M5 9h6M5 11.5h4"/>
+                </svg>
+                Bao bì trang trọng
+              </span>
+              <span class="paper-foot-item">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="8" cy="8" r="6"/>
+                  <path d="M5.5 8.5l2 2 3.5-4"/>
+                </svg>
+                Có thiệp gửi tặng
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ebook tiers box (editorial denomination cards) -->
+        <div class="ebook-box" id="ebook-box" hidden>
+          <div class="ebook-head">
+            <span class="paper-eyebrow">
+              <span class="ornament">✦</span>
+              Ấn bản · Ebook
+            </span>
+            <span class="paper-edition">Tuỳ tâm · Mọi mức ủng hộ đều quý</span>
+          </div>
+
+          <div class="tier-grid">
+            {ebookTiers.map((t) => (
+              <label class="tier">
+                <input type="radio" name="ebookTier" value={t} />
+                <span class="tier-card">
+                  <span class="tier-amount">{new Intl.NumberFormat('vi-VN').format(t / 1000)}</span>
+                  <span class="tier-unit">Ngàn đồng</span>
+                </span>
+              </label>
+            ))}
+            <label class="tier tier-custom">
+              <input type="radio" name="ebookTier" value="custom" />
+              <span class="tier-card">
+                <span class="tier-icon" aria-hidden="true">+</span>
+                <span class="tier-unit">Số khác</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="field custom-amount" id="custom-amount-wrap" hidden>
+            <label for="f-custom">Nhập số tiền tuỳ tâm</label>
+            <div class="amount-input-wrap">
+              <input id="f-custom" name="customAmount" type="text" inputmode="numeric" autocomplete="off" placeholder="VD: 200,000" />
+              <span class="amount-currency" aria-hidden="true">đ</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field" id="address-field">
+          <label for="f-address">Địa chỉ nhận sách <span class="hint paper-only">(Bắt buộc khi chọn Sách giấy)</span></label>
+          <textarea id="f-address" name="address" rows="2" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"></textarea>
+          <small class="error" data-error-for="address"></small>
+        </div>
+
+        <div class="field">
+          <label for="f-note">Lời nhắn (không bắt buộc)</label>
+          <textarea id="f-note" name="note" rows="2" placeholder="Lời nhắn yêu thương dành cho Quỹ..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary submit-btn" id="submit-btn">
+          Xác nhận đã chuyển khoản
+        </button>
+
+        <p class="form-disclaimer">
+          Bằng việc gửi form, bạn đồng ý cho Quỹ Khởi Sự Từ Tâm liên hệ qua thông tin trên để xác nhận quyên góp và gửi sách.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Success modal -->
+  <div class="modal" id="success-modal" hidden role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-panel success-panel">
+      <div class="success-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64" width="64" height="64" fill="none">
+          <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="3"/>
+          <path d="M20 32 L28 40 L44 24" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3>Cảm ơn bạn đã đồng hành!</h3>
+      <p class="success-msg" id="success-msg">
+        Quỹ Khởi Sự Từ Tâm đã nhận được thông tin của bạn.
+      </p>
+      <div class="success-details">
+        <p><strong>Sách giấy:</strong> Dự kiến nhận trong vòng <strong>5–7 ngày làm việc</strong>.</p>
+        <p><strong>Ebook:</strong> Đường link tải sẽ được gửi qua email trong vòng <strong>24 giờ</strong>.</p>
+      </div>
+      <button type="button" class="btn btn-primary" data-modal-close>Đã hiểu</button>
+    </div>
+  </div>
+
+  <!-- QR zoom modal -->
+  <div class="modal qr-modal" id="qr-modal" hidden role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="qr-zoom-panel">
+      <button class="modal-close" data-modal-close aria-label="Đóng">×</button>
+      <img src="/images/qr-code.png" alt="Mã QR chuyển khoản (phóng to)" onerror="this.style.display='none'; this.parentElement.classList.add('no-qr');" />
+      <div class="qr-fallback-large">QR Code (placeholder)</div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // ---------- Custom select (combobox) ----------
+  type CustomSelectAPI = {
+    setValue: (value: string, label?: string) => void;
+    getValue: () => string;
+    getSelectedOption: () => HTMLLIElement | null;
+  };
+  const customSelects = new Map<string, CustomSelectAPI>();
+
+  function setupCustomSelect(root: HTMLElement) {
+    const name = root.dataset.name!;
+    const trigger = root.querySelector('.cs-trigger') as HTMLButtonElement;
+    const valueEl = root.querySelector('.cs-value') as HTMLElement;
+    const placeholder = valueEl.textContent || '';
+    const optionsEl = root.querySelector('.cs-options') as HTMLUListElement;
+    const hidden = root.querySelector('input[type="hidden"]') as HTMLInputElement;
+    const options = Array.from(optionsEl.querySelectorAll('[role="option"]')) as HTMLLIElement[];
+
+    function open() {
+      closeAllExcept(root);
+      optionsEl.hidden = false;
+      trigger.setAttribute('aria-expanded', 'true');
+      root.classList.add('open');
+    }
+    function close() {
+      optionsEl.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+      root.classList.remove('open');
+    }
+    function setValue(value: string, label?: string) {
+      hidden.value = value;
+      const opt = options.find((o) => o.dataset.value === value);
+      const text = label ?? opt?.textContent ?? placeholder;
+      valueEl.textContent = text;
+      valueEl.classList.toggle('is-placeholder', !value);
+      options.forEach((o) => o.setAttribute('aria-selected', o.dataset.value === value ? 'true' : 'false'));
+      root.dispatchEvent(new CustomEvent('change', { bubbles: true }));
+    }
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (root.classList.contains('open')) close();
+      else open();
+    });
+    options.forEach((opt) => {
+      opt.addEventListener('click', () => {
+        setValue(opt.dataset.value || '', opt.textContent || '');
+        close();
+        trigger.focus();
+      });
+    });
+    trigger.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (!root.classList.contains('open')) open();
+        const first = options.find((o) => o.getAttribute('aria-selected') === 'true') || options[0];
+        first?.focus();
+      }
+    });
+    options.forEach((opt, i) => {
+      opt.tabIndex = -1;
+      opt.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          (options[i + 1] || options[0]).focus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          (options[i - 1] || options[options.length - 1]).focus();
+        } else if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setValue(opt.dataset.value || '', opt.textContent || '');
+          close();
+          trigger.focus();
+        } else if (e.key === 'Escape') {
+          close();
+          trigger.focus();
+        }
+      });
+    });
+
+    customSelects.set(name, {
+      setValue,
+      getValue: () => hidden.value,
+      getSelectedOption: () => options.find((o) => o.dataset.value === hidden.value) || null,
+    });
+  }
+
+  function closeAllExcept(except?: Element) {
+    document.querySelectorAll<HTMLElement>('.custom-select.open').forEach((el) => {
+      if (el === except) return;
+      el.classList.remove('open');
+      const ul = el.querySelector<HTMLElement>('.cs-options');
+      const tr = el.querySelector<HTMLElement>('.cs-trigger');
+      if (ul) ul.hidden = true;
+      tr?.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('.custom-select').forEach(setupCustomSelect);
+  document.addEventListener('click', (e) => {
+    if (!(e.target as HTMLElement).closest('.custom-select')) closeAllExcept();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAllExcept();
+  });
+
+  // ---------- Form refs ----------
+  const form = document.getElementById('donation-form') as HTMLFormElement | null;
+  const typeSelect = customSelects.get('donationType');
+  const bookSelect = customSelects.get('book');
+  const typeWrap = document.getElementById('f-type-wrap');
+  const bookWrap = document.getElementById('f-book-wrap');
+  const paperBox = document.getElementById('paper-box');
+  const ebookBox = document.getElementById('ebook-box');
+  const paperPriceDisplay = document.getElementById('paper-price-display');
+  const customAmountWrap = document.getElementById('custom-amount-wrap');
+  const customAmountInput = document.getElementById('f-custom') as HTMLInputElement | null;
+  const addressField = document.getElementById('address-field');
+
+  const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
+
+  function updateAmountBoxes() {
+    if (!typeSelect || !paperBox || !ebookBox) return;
+    const t = typeSelect.getValue();
+    paperBox.hidden = !(t === 'paper' || t === 'both');
+    ebookBox.hidden = !(t === 'ebook' || t === 'both');
+
+    if (addressField) {
+      const paperRequired = t === 'paper' || t === 'both';
+      addressField.classList.toggle('required', paperRequired);
+    }
+    updatePaperPrice();
+  }
+
+  function updatePaperPrice() {
+    if (!bookSelect || !paperPriceDisplay) return;
+    const opt = bookSelect.getSelectedOption();
+    const price = opt?.getAttribute('data-paper-price');
+    const paperEmpty = document.getElementById('paper-empty');
+    const paperCurrency = document.getElementById('paper-price-currency');
+    if (price) {
+      paperPriceDisplay.textContent = new Intl.NumberFormat('vi-VN').format(parseInt(price, 10));
+      paperPriceDisplay.hidden = false;
+      if (paperCurrency) paperCurrency.hidden = false;
+      if (paperEmpty) paperEmpty.hidden = true;
+    } else {
+      paperPriceDisplay.hidden = true;
+      if (paperCurrency) paperCurrency.hidden = true;
+      if (paperEmpty) paperEmpty.hidden = false;
+    }
+  }
+
+  typeWrap?.addEventListener('change', updateAmountBoxes);
+  bookWrap?.addEventListener('change', updatePaperPrice);
+
+  // Ebook tier radio
+  document.querySelectorAll('input[name="ebookTier"]').forEach((r) => {
+    r.addEventListener('change', (e) => {
+      const v = (e.target as HTMLInputElement).value;
+      if (customAmountWrap) customAmountWrap.hidden = v !== 'custom';
+      if (v !== 'custom' && customAmountInput) customAmountInput.value = '';
+      if (v === 'custom') setTimeout(() => customAmountInput?.focus(), 50);
+    });
+  });
+
+  // Custom amount: format with thousand separators
+  customAmountInput?.addEventListener('input', (e) => {
+    const target = e.target as HTMLInputElement;
+    const raw = target.value.replace(/[^0-9]/g, '');
+    target.value = raw ? Number(raw).toLocaleString('en-US') : '';
+  });
+
+  // Listen to book:select from Books.astro
+  document.addEventListener('book:select', (e: any) => {
+    const { action, bookId, bookTitle } = e.detail;
+    if (!typeSelect || !bookSelect || !typeWrap || !bookWrap) return;
+
+    const typeValue = action === 'paper' ? 'paper' : 'ebook';
+    const typeLabel = action === 'paper' ? 'Sách giấy' : 'Ebook';
+    typeSelect.setValue(typeValue, typeLabel);
+    bookSelect.setValue(bookId, bookTitle);
+    updateAmountBoxes();
+
+    [typeWrap, bookWrap].forEach((el) => {
+      el.classList.add('highlight');
+      setTimeout(() => el.classList.remove('highlight'), 1200);
+    });
+  });
+
+  // Reset custom selects when form resets
+  form?.addEventListener('reset', () => {
+    setTimeout(() => {
+      typeSelect?.setValue('');
+      bookSelect?.setValue('');
+      updateAmountBoxes();
+    }, 0);
+  });
+
+  // ---------- Copy buttons ----------
+  document.querySelectorAll('[data-copy]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const text = btn.getAttribute('data-copy') || '';
+      try {
+        await navigator.clipboard.writeText(text);
+        const hint = btn.querySelector('.copy-hint');
+        if (hint) {
+          const original = hint.textContent;
+          hint.textContent = 'Đã sao chép ✓';
+          setTimeout(() => { hint.textContent = original; }, 1500);
+        }
+      } catch {}
+    });
+  });
+
+  // ---------- QR zoom ----------
+  const qrModal = document.getElementById('qr-modal');
+  document.getElementById('qr-zoom-btn')?.addEventListener('click', () => {
+    if (!qrModal) return;
+    qrModal.hidden = false;
+    setTimeout(() => qrModal.classList.add('open'), 10);
+    document.body.style.overflow = 'hidden';
+  });
+
+  // ---------- Modal close (success + qr) ----------
+  function closeModalEl(el: HTMLElement | null) {
+    if (!el) return;
+    el.classList.remove('open');
+    setTimeout(() => {
+      el.hidden = true;
+      document.body.style.overflow = '';
+    }, 200);
+  }
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('#success-modal [data-modal-close]')) closeModalEl(document.getElementById('success-modal'));
+    if (target.closest('#qr-modal [data-modal-close]')) closeModalEl(document.getElementById('qr-modal'));
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    closeModalEl(document.getElementById('success-modal'));
+    closeModalEl(document.getElementById('qr-modal'));
+  });
+
+  // ---------- Validation ----------
+  function setError(name: string, msg: string) {
+    const el = document.querySelector(`[data-error-for="${name}"]`);
+    if (el) el.textContent = msg;
+  }
+  function clearErrors() {
+    document.querySelectorAll('[data-error-for]').forEach((el) => (el.textContent = ''));
+  }
+
+  function validate(data: FormData): string | null {
+    clearErrors();
+    let firstError: string | null = null;
+
+    const required = (key: string, label: string) => {
+      const v = (data.get(key) || '').toString().trim();
+      if (!v) {
+        setError(key, `Vui lòng nhập ${label}.`);
+        firstError ??= key;
+        return false;
+      }
+      return true;
+    };
+
+    required('fullName', 'họ và tên');
+
+    const phone = (data.get('phone') || '').toString().trim();
+    if (!phone) {
+      setError('phone', 'Vui lòng nhập số điện thoại.');
+      firstError ??= 'phone';
+    } else if (!/^(0|\+84)\d{8,10}$/.test(phone.replace(/\s/g, ''))) {
+      setError('phone', 'Số điện thoại không hợp lệ (VD: 0901234567).');
+      firstError ??= 'phone';
+    }
+
+    const email = (data.get('email') || '').toString().trim();
+    if (!email) {
+      setError('email', 'Vui lòng nhập email.');
+      firstError ??= 'email';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('email', 'Email không hợp lệ.');
+      firstError ??= 'email';
+    }
+
+    const type = (data.get('donationType') || '').toString();
+    if (!type) {
+      setError('donationType', 'Vui lòng chọn hình thức ủng hộ.');
+      firstError ??= 'donationType';
+    }
+
+    const book = (data.get('book') || '').toString();
+    if (!book) {
+      setError('book', 'Vui lòng chọn cuốn sách.');
+      firstError ??= 'book';
+    }
+
+    if (type === 'paper' || type === 'both') {
+      const address = (data.get('address') || '').toString().trim();
+      if (!address) {
+        setError('address', 'Vui lòng nhập địa chỉ nhận sách.');
+        firstError ??= 'address';
+      }
+    }
+
+    return firstError;
+  }
+
+  // ---------- Submit ----------
+  // Replace these endpoints with real values from Quỹ:
+  const GOOGLE_SHEETS_ENDPOINT = ''; // e.g. 'https://script.google.com/macros/s/AKfycb.../exec'
+  const EMAIL_ENDPOINT = '';         // e.g. Formspree: 'https://formspree.io/f/xxxxxx'
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const firstError = validate(data);
+    if (firstError) {
+      const field = document.querySelector(`[name="${firstError}"]`) as HTMLElement | null;
+      // Hidden inputs (custom selects) — focus their visible trigger instead
+      const focusTarget =
+        field && (field as HTMLInputElement).type === 'hidden'
+          ? (field.closest('.custom-select')?.querySelector('.cs-trigger') as HTMLElement | null)
+          : field;
+      focusTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      focusTarget?.focus();
+      return;
+    }
+
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Đang gửi...';
+    }
+
+    const payload: Record<string, any> = {};
+    data.forEach((v, k) => (payload[k] = v));
+    // Normalize: strip thousand separators from customAmount
+    if (payload.customAmount) {
+      payload.customAmount = String(payload.customAmount).replace(/[^0-9]/g, '');
+    }
+    payload.submittedAt = new Date().toISOString();
+    payload.source = 'tang-sach-landing';
+
+    // Tracking
+    if (typeof (window as any).fbq === 'function') {
+      (window as any).fbq('track', 'Donate', { content_name: payload.book, value: payload.customAmount || 0 });
+    }
+    if (typeof (window as any).gtag === 'function') {
+      (window as any).gtag('event', 'donation_submit', payload);
+    }
+
+    try {
+      const tasks: Promise<any>[] = [];
+      if (GOOGLE_SHEETS_ENDPOINT) {
+        tasks.push(
+          fetch(GOOGLE_SHEETS_ENDPOINT, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          })
+        );
+      }
+      if (EMAIL_ENDPOINT) {
+        tasks.push(
+          fetch(EMAIL_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(payload),
+          })
+        );
+      }
+      if (tasks.length === 0) {
+        // No endpoint yet — log for dev visibility
+        console.log('[donation-form] No backend endpoints configured. Payload:', payload);
+      }
+      await Promise.allSettled(tasks);
+
+      // Show success
+      const successMsg = document.getElementById('success-msg');
+      if (successMsg) {
+        const bookLabel = bookSelect?.getSelectedOption()?.textContent || '';
+        successMsg.textContent = `Cảm ơn ${payload.fullName}! Quỹ đã ghi nhận ủng hộ "${bookLabel}" của bạn.`;
+      }
+      const successModal = document.getElementById('success-modal');
+      if (successModal) {
+        successModal.hidden = false;
+        setTimeout(() => successModal.classList.add('open'), 10);
+        document.body.style.overflow = 'hidden';
+      }
+      form.reset();
+      updateAmountBoxes();
+    } catch (err) {
+      console.error(err);
+      alert('Có lỗi xảy ra khi gửi. Vui lòng thử lại hoặc liên hệ Quỹ qua hotline 0933 039 678.');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Xác nhận đã chuyển khoản';
+      }
+    }
+  });
+</script>
+
+<style>
+  .donation {
+    background: transparent;
+  }
+  .section-head {
+    text-align: center;
+    margin-bottom: 48px;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .section-head .section-title em {
+    color: var(--color-primary-dark);
+    font-style: italic;
+  }
+  .section-head .section-lead {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .donation-grid {
+    display: grid;
+    grid-template-columns: 40fr 60fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* ---- Payment card ---- */
+  .payment-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border);
+    position: sticky;
+    top: 92px;
+  }
+  .payment-title {
+    font-size: 19px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .bank-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    gap: 12px;
+    border-bottom: 1px dashed var(--color-border);
+  }
+  .bank-row:last-of-type { border-bottom: none; }
+  .bank-label {
+    font-size: 14px;
+    color: var(--color-text-muted);
+  }
+  .bank-value {
+    font-size: 14px;
+    font-weight: 600;
+    text-align: right;
+  }
+  .bank-value.mono {
+    font-family: 'SF Mono', 'Menlo', monospace;
+    letter-spacing: 0.02em;
+  }
+  .copyable {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s ease;
+  }
+  .copyable:hover { background: var(--color-bg-alt); }
+  .copy-hint {
+    font-size: 14px;
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+
+  .qr-wrap {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+  }
+  .qr-btn {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .qr-btn:hover {
+    background: var(--color-bg-alt);
+    transform: scale(1.02);
+  }
+  .qr-img-wrap {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    background: white;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+  }
+  .qr-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    position: relative;
+    z-index: 2;
+  }
+  .qr-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--color-text-muted);
+    z-index: 1;
+    padding: 12px;
+  }
+  .qr-fallback span {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--color-primary);
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .qr-fallback small {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .qr-hint {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  .payment-note {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    line-height: 1.55;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--color-border);
+  }
+
+  /* ---- Form ---- */
+  .donation-form {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .field .hint {
+    font-weight: 400;
+    color: var(--color-text-muted);
+    font-size: 14px;
+  }
+  .field input,
+  .field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 16px;
+    background-color: var(--color-bg);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.3s ease;
+  }
+  .field input:focus,
+  .field textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(245, 138, 44, 0.15);
+    background-color: var(--color-surface);
+  }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .field input.highlight {
+    background-color: var(--color-primary-soft);
+    border-color: var(--color-primary);
+  }
+
+  /* ---- Custom select (combobox) ---- */
+  .custom-select {
+    position: relative;
+  }
+  .cs-trigger {
+    width: 100%;
+    padding: 12px 40px 12px 14px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg);
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--color-text);
+    text-align: left;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.3s ease;
+  }
+  .cs-trigger:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(245, 138, 44, 0.15);
+    background-color: var(--color-surface);
+  }
+  .custom-select.open .cs-trigger {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(245, 138, 44, 0.15);
+    background-color: var(--color-surface);
+  }
+  .cs-value {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cs-value.is-placeholder {
+    color: var(--color-text-muted);
+  }
+  .cs-arrow {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    pointer-events: none;
+    transition: transform 0.2s ease;
+  }
+  .custom-select.open .cs-arrow {
+    transform: translateY(-50%) rotate(180deg);
+    color: var(--color-primary);
+  }
+  .cs-options {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    max-height: 280px;
+    overflow-y: auto;
+    animation: cs-pop 0.16s ease;
+  }
+  @keyframes cs-pop {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .cs-options li {
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    color: var(--color-text);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.12s ease, color 0.12s ease;
+    outline: none;
+  }
+  .cs-options li:hover,
+  .cs-options li:focus {
+    background-color: var(--color-primary-soft);
+    color: var(--color-primary-dark);
+  }
+  .cs-options li[aria-selected="true"] {
+    background-color: var(--color-primary);
+    color: white;
+    font-weight: 600;
+  }
+  .cs-options li[aria-selected="true"]:hover,
+  .cs-options li[aria-selected="true"]:focus {
+    background-color: var(--color-primary-dark);
+    color: white;
+  }
+  .custom-select.highlight .cs-trigger {
+    background-color: var(--color-primary-soft);
+    border-color: var(--color-primary);
+  }
+
+  .error {
+    color: var(--color-error);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .error:empty { display: none; }
+  .error:not(:empty) { margin-top: 2px; }
+
+  /* Amount boxes */
+  .amount-box {
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .amount-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ---- Paper price (editorial bookplate, subtle) ---- */
+  .paper-box {
+    position: relative;
+  }
+  .paper-box-inner {
+    background: var(--color-paper);
+    border: 1px solid var(--color-rule);
+    padding: 18px 22px 14px;
+    border-radius: var(--radius-md);
+    position: relative;
+  }
+  .paper-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+  .paper-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-primary-dark);
+  }
+  .paper-eyebrow .ornament {
+    font-size: 14px;
+    color: var(--color-primary);
+  }
+  .paper-edition {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--color-text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  .paper-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    min-height: 50px;
+  }
+  .paper-left {
+    flex: 1;
+    min-width: 0;
+  }
+  .paper-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .paper-empty em {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+  .paper-empty small {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    opacity: 0.75;
+    letter-spacing: 0.02em;
+  }
+  .paper-right {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .paper-price {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 38px;
+    font-weight: 600;
+    color: var(--color-text-ink);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .paper-price-currency {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--color-primary-dark);
+    letter-spacing: 0.02em;
+  }
+
+  .paper-perf {
+    margin: 16px -24px 14px;
+    height: 1px;
+    background-image: linear-gradient(90deg, var(--color-rule) 50%, transparent 50%);
+    background-size: 8px 1px;
+    position: relative;
+  }
+  .paper-perf::before,
+  .paper-perf::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background: var(--color-surface);
+    border-radius: 50%;
+  }
+  .paper-perf::before { left: -6px; }
+  .paper-perf::after { right: -6px; }
+
+  .paper-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    color: var(--color-text-muted);
+    font-size: 14px;
+  }
+  .paper-foot-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.01em;
+  }
+  .paper-foot-item svg {
+    color: var(--color-teal-dark);
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 540px) {
+    .paper-box-inner { padding: 18px 20px 16px; }
+    .paper-price { font-size: 30px; }
+    .paper-empty em { font-size: 18px; }
+    .paper-foot { gap: 10px 14px; font-size: 14px; }
+    .paper-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+  }
+  .amount-input-wrap {
+    position: relative;
+  }
+  .amount-input-wrap input {
+    padding-right: 36px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+  .amount-currency {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    font-weight: 600;
+    pointer-events: none;
+  }
+
+  /* ---- Ebook box (editorial) ---- */
+  .ebook-box {
+    background: var(--color-paper);
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.04 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+    border: 1px solid var(--color-rule);
+    border-radius: 4px;
+    padding: 22px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .ebook-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* Denomination tier cards */
+  .tier-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .tier {
+    position: relative;
+    cursor: pointer;
+  }
+  .tier input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .tier-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 14px 8px 12px;
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-text-ink);
+    border-radius: 4px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .tier-card::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px dashed transparent;
+    border-radius: 2px;
+    pointer-events: none;
+    transition: border-color 0.18s ease;
+  }
+  .tier-amount {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 600;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--color-text-ink);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .tier-unit {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .tier-icon {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--color-text-ink);
+  }
+
+  .tier:hover .tier-card {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(42, 36, 25, 0.12);
+  }
+  .tier:hover .tier-card::before {
+    border-color: var(--color-primary);
+  }
+  .tier input:checked + .tier-card {
+    background: var(--color-text-ink);
+  }
+  .tier input:checked + .tier-card .tier-amount,
+  .tier input:checked + .tier-card .tier-icon { color: #F3EADA; }
+  .tier input:checked + .tier-card .tier-unit { color: var(--color-primary); }
+  .tier input:checked + .tier-card::before {
+    border-color: rgba(243, 234, 218, 0.3);
+  }
+
+  .tier-custom .tier-card {
+    border-style: dashed;
+    background: transparent;
+  }
+
+  @media (max-width: 720px) {
+    .tier-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  @media (max-width: 420px) {
+    .tier-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .tier-amount { font-size: 22px; }
+  }
+
+  .submit-btn {
+    margin-top: 8px;
+    padding: 16px 24px;
+    font-size: 16px;
+  }
+  .form-disclaimer {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  /* Modal (shared base) */
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .modal.open { opacity: 1; }
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 20, 20, 0.55);
+    backdrop-filter: blur(4px);
+  }
+  .modal-panel.success-panel {
+    position: relative;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: 40px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(10px);
+    transition: transform 0.25s ease;
+  }
+  .modal.open .modal-panel { transform: translateY(0); }
+  .success-icon {
+    color: var(--color-teal);
+    margin: 0 auto 16px;
+    display: inline-flex;
+  }
+  .success-panel h3 {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  .success-msg {
+    color: var(--color-text-muted);
+    margin-bottom: 20px;
+  }
+  .success-details {
+    background: var(--color-bg-alt);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    text-align: left;
+    margin-bottom: 24px;
+  }
+  .success-details p {
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 6px;
+  }
+  .success-details p:last-child { margin-bottom: 0; }
+
+  /* QR zoom */
+  .qr-modal .qr-zoom-panel {
+    position: relative;
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    max-width: 480px;
+    width: 100%;
+    transform: scale(0.95);
+    transition: transform 0.25s ease;
+  }
+  .qr-modal.open .qr-zoom-panel { transform: scale(1); }
+  .qr-zoom-panel img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+  }
+  .qr-zoom-panel.no-qr img { display: none; }
+  .qr-fallback-large {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-alt);
+    color: var(--color-text-muted);
+    border-radius: var(--radius-md);
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .qr-zoom-panel:not(.no-qr) .qr-fallback-large { display: none; }
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.06);
+    font-size: 24px;
+    line-height: 1;
+    z-index: 5;
+    color: var(--color-text);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .donation-grid {
+      grid-template-columns: 1fr;
+    }
+    .payment-card {
+      position: static;
+    }
+    .field-row {
+      grid-template-columns: 1fr;
+    }
+    .donation-form {
+      padding: 24px;
+    }
+    .tier-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  @media (max-width: 560px) {
+    .payment-card { padding: 22px; }
+    .qr-img-wrap { width: 160px; height: 160px; }
+    .tier-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>

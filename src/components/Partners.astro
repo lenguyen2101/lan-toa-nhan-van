@@ -1,0 +1,140 @@
+---
+import { partners } from '../data/partners';
+---
+
+<section class="section partners" id="dong-hanh">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Đơn vị đồng hành</span>
+      <h2 class="section-title">
+        Cảm ơn các đối tác <em>đã đồng hành.</em>
+      </h2>
+      <p class="section-lead">
+        Hành trình lan toả tri thức không thể trọn vẹn nếu thiếu sự sát cánh của các đơn vị bảo trợ, xuất bản và truyền thông.
+      </p>
+    </div>
+
+    <div class="partners-grid">
+      {partners.map((p) => (
+        <div class="partner-tile" title={p.name}>
+          <div class="partner-logo-wrap">
+            <img src={p.logo} alt={p.name} loading="lazy" onerror="this.style.display='none'; this.parentElement.classList.add('no-img');" />
+            <span class="partner-fallback" aria-hidden="true">{p.name.split(' ').map(w => w[0]).join('').slice(0,2)}</span>
+          </div>
+          <span class="partner-name">{p.name}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .partners {
+    background: var(--color-bg-alt);
+    position: relative;
+  }
+  .partners::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: var(--color-rule);
+  }
+  .partners::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: var(--color-rule);
+  }
+  .section-head {
+    text-align: center;
+    margin-bottom: 48px;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .section-head .section-title em {
+    color: var(--color-primary-dark);
+    font-style: italic;
+  }
+  .section-head .section-lead {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .partners-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px 20px;
+  }
+
+  .partner-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .partner-logo-wrap {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .partner-logo-wrap:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .partner-logo-wrap img {
+    max-width: 64%;
+    max-height: 64%;
+    object-fit: contain;
+    filter: grayscale(0.1);
+    z-index: 2;
+    position: relative;
+  }
+  .partner-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--color-text-muted);
+    z-index: 1;
+  }
+  .partner-logo-wrap.no-img .partner-fallback {
+    color: var(--color-primary);
+  }
+  .partner-name {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  @media (max-width: 900px) {
+    .partners-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  @media (max-width: 560px) {
+    .partners-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .partner-logo-wrap {
+      width: 80px;
+      height: 80px;
+    }
+  }
+</style>

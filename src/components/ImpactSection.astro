@@ -1,0 +1,410 @@
+---
+type Testimonial = {
+  name: string;
+  role: string;
+  initial: string;
+  color: string;
+  quote: string;
+};
+
+const testimonials: Testimonial[] = [
+  {
+    name: 'Nguyễn Thanh Hương',
+    role: 'Người ủng hộ · TP. Hồ Chí Minh',
+    initial: 'H',
+    color: 'var(--color-primary)',
+    quote:
+      'Lần đầu tôi cảm thấy việc cho đi cũng đẹp đẽ như nhận lại. Mỗi cuốn sách của Quỹ là một nhịp cầu yêu thương — minh bạch và đúng tâm.',
+  },
+  {
+    name: 'Trần Quốc Khánh',
+    role: 'Doanh nhân · Bình Dương',
+    initial: 'K',
+    color: 'var(--color-teal)',
+    quote:
+      'Đọc xong "Đi để thương", tôi muốn quay lại làm thiện nguyện sau nhiều năm bỏ ngỏ. Quỹ đã khơi lại trong tôi một điều rất nhỏ mà quan trọng.',
+  },
+  {
+    name: 'Lê Thị Mai',
+    role: 'Giáo viên · Đà Nẵng',
+    initial: 'M',
+    color: 'var(--color-pink)',
+    quote:
+      'Cảm động khi nhận được lời cảm ơn từ chính các em — đó là phần thưởng lớn nhất. Mỗi cuốn ebook tôi mua đều thấy ý nghĩa.',
+  },
+  {
+    name: 'Phạm Đức An',
+    role: 'Phụ huynh · Hà Nội',
+    initial: 'A',
+    color: 'var(--color-blue)',
+    quote:
+      'Tôi tặng "Cha mẹ cùng con" cho cả nhóm bạn của vợ. Cuốn sách thiết thực, gần gũi và đầy thấu hiểu. Tủ sách của Quỹ rất đáng đầu tư.',
+  },
+  {
+    name: 'Hoàng Bích Trâm',
+    role: 'Nhà nghiên cứu · TP. Hồ Chí Minh',
+    initial: 'T',
+    color: 'var(--color-primary-dark)',
+    quote:
+      'Công trình "Từ thiện trong dòng chảy văn hoá xã hội" là tài liệu nền tảng tôi vẫn dùng để giảng dạy. Cảm ơn Quỹ đã đầu tư cho học thuật.',
+  },
+  {
+    name: 'Vũ Minh Quân',
+    role: 'Kỹ sư · Bình Định',
+    initial: 'Q',
+    color: 'var(--color-teal-dark)',
+    quote:
+      'Là một người trẻ, tôi tin vào những gì Quỹ làm. Không hô hào, không phô trương — chỉ những việc tử tế được làm đều đặn mỗi ngày.',
+  },
+];
+
+const row = [...testimonials, ...testimonials];
+---
+
+<section class="impact" aria-label="Tác động của Quỹ Khởi Sự Từ Tâm">
+  <div class="impact-top">
+    <div class="impact-image">
+      <img src="/images/img-statics.webp" alt="Hoạt động cộng đồng của Quỹ Khởi Sự Từ Tâm" loading="lazy" />
+      <div class="impact-image-overlay" aria-hidden="true"></div>
+    </div>
+
+    <div class="impact-content container">
+      <h2 class="impact-headline">
+        Năm năm khởi sự —<br />
+        <em>lan toả nhân văn.</em>
+      </h2>
+
+      <div class="stats-grid">
+        <div class="stat">
+          <span class="stat-value"><small>Hơn</small> 10 <small>tỷ</small></span>
+          <span class="stat-label">VNĐ đã cam kết</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">6</span>
+          <span class="stat-label">Đầu sách tri thức</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">4</span>
+          <span class="stat-label">Dự án thiện nguyện</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">1,000<small>+</small></span>
+          <span class="stat-label">Em được đồng hành</span>
+        </div>
+      </div>
+
+      <p class="impact-tagline">
+        <span class="dot" aria-hidden="true"></span>
+        100% minh bạch — Mỗi đóng góp đến đúng nơi cần.
+      </p>
+    </div>
+  </div>
+
+  <div class="testimonials" aria-label="Lời nhắn từ những người đồng hành">
+    <div class="testimonial-track">
+      {row.map((t) => (
+        <article class="testimonial">
+          <header class="testimonial-head">
+            <div class="testimonial-avatar" style={`background:${t.color}`} aria-hidden="true">
+              {t.initial}
+            </div>
+            <div>
+              <p class="testimonial-name">{t.name}</p>
+              <p class="testimonial-role">{t.role}</p>
+            </div>
+          </header>
+          <p class="testimonial-quote">"{t.quote}"</p>
+        </article>
+      ))}
+    </div>
+    <div class="fade-left" aria-hidden="true"></div>
+    <div class="fade-right" aria-hidden="true"></div>
+  </div>
+</section>
+
+<style>
+  .impact {
+    position: relative;
+    background: var(--color-bg-deep);
+    color: #F3EADA;
+    overflow: hidden;
+    margin-top: 40px;
+    padding-bottom: 56px;
+  }
+
+  /* ---- Top: image + content ---- */
+  .impact-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+    min-height: 540px;
+  }
+
+  .impact-image {
+    position: relative;
+    overflow: hidden;
+  }
+  .impact-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: saturate(0.92);
+  }
+  .impact-image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(42, 36, 25, 0.15) 0%,
+      rgba(42, 36, 25, 0.05) 60%,
+      var(--color-bg-deep) 100%
+    );
+    pointer-events: none;
+  }
+
+  .impact-content {
+    padding: 64px 56px 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 32px;
+    max-width: none;
+  }
+
+  .impact-headline {
+    font-family: var(--font-display);
+    font-style: normal;
+    font-weight: 500;
+    font-size: clamp(28px, 3.4vw, 44px);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: #F3EADA;
+    margin: 0;
+  }
+  .impact-headline em {
+    font-style: italic;
+    color: var(--color-primary);
+  }
+
+  /* Stats grid 2x2 */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px 32px;
+    position: relative;
+    padding-top: 8px;
+  }
+  /* Cross divider lines */
+  .stats-grid::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: rgba(243, 234, 218, 0.15);
+  }
+  .stats-grid::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: rgba(243, 234, 218, 0.15);
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 0;
+  }
+  .stat-value {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-style: italic;
+    font-size: clamp(40px, 4.8vw, 64px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-pink) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+  .stat-value small {
+    font-size: 0.55em;
+    font-weight: 600;
+  }
+  .stat-label {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(243, 234, 218, 0.78);
+  }
+
+  .impact-tagline {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(243, 234, 218, 0.78);
+    letter-spacing: 0.02em;
+    margin: 0;
+  }
+  .impact-tagline .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-teal);
+    box-shadow: 0 0 0 3px rgba(43, 168, 138, 0.22);
+  }
+
+  /* ---- Testimonials marquee (overlaps image bottom) ---- */
+  .testimonials {
+    position: relative;
+    margin-top: -90px;
+    z-index: 5;
+    overflow: hidden;
+  }
+  .testimonial-track {
+    display: flex;
+    gap: 20px;
+    padding: 0 24px;
+    width: max-content;
+    animation: scroll-left 75s linear infinite;
+  }
+  .testimonials:hover .testimonial-track {
+    animation-play-state: paused;
+  }
+  @keyframes scroll-left {
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(-50% - 10px)); }
+  }
+
+  .testimonial {
+    flex-shrink: 0;
+    width: 340px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-radius: 14px;
+    padding: 22px 22px 24px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .testimonial-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .testimonial-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .testimonial-name {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.2;
+    color: var(--color-text-ink);
+  }
+  .testimonial-role {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    margin: 2px 0 0;
+    line-height: 1.2;
+  }
+  .testimonial-quote {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .fade-left, .fade-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .fade-left {
+    left: 0;
+    background: linear-gradient(90deg, var(--color-bg-deep) 0%, transparent 100%);
+  }
+  .fade-right {
+    right: 0;
+    background: linear-gradient(270deg, var(--color-bg-deep) 0%, transparent 100%);
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 980px) {
+    .impact-top {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+    .impact-image {
+      aspect-ratio: 16 / 9;
+    }
+    .impact-image-overlay {
+      background: linear-gradient(
+        180deg,
+        rgba(42, 36, 25, 0.05) 0%,
+        rgba(42, 36, 25, 0.4) 70%,
+        var(--color-bg-deep) 100%
+      );
+    }
+    .impact-content {
+      padding: 48px 24px 100px;
+      gap: 28px;
+    }
+    .testimonials { margin-top: -70px; }
+  }
+
+  @media (max-width: 600px) {
+    .impact { margin-top: 32px; }
+    .impact-content {
+      padding: 36px 20px 80px;
+      gap: 24px;
+    }
+    .testimonials { margin-top: -50px; }
+    .impact-headline {
+      font-size: 28px;
+      line-height: 1.25;
+    }
+    .stat-value {
+      font-size: 36px;
+    }
+    .testimonial {
+      width: 280px;
+      padding: 18px 18px 20px;
+    }
+    .testimonial-quote {
+      font-size: 14px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .testimonial-track { animation: none; }
+  }
+</style>

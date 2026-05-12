@@ -1,0 +1,96 @@
+---
+---
+
+<header class="site-header" id="site-header">
+  <div class="container header-inner">
+    <a href="#top" class="brand" aria-label="Quỹ Khởi Sự Từ Tâm">
+      <img src="/images/logo.webp" alt="Quỹ Khởi Sự Từ Tâm" class="brand-logo" />
+      <span class="brand-text">
+        <strong>Quỹ Khởi Sự Từ Tâm</strong>
+        <span>Tặng Sách Gây Quỹ</span>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Điều hướng chính">
+      <a href="#du-an">Dự án</a>
+      <a href="#dong-hanh">Đồng hành</a>
+      <a href="#chon-sach">Chọn sách</a>
+      <a href="#dang-ky">Ủng hộ</a>
+    </nav>
+
+    <a href="#chon-sach" class="btn btn-primary header-cta">Chọn sách ủng hộ</a>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 251, 245, 0.85);
+    backdrop-filter: saturate(160%) blur(10px);
+    -webkit-backdrop-filter: saturate(160%) blur(10px);
+    border-bottom: 1px solid rgba(234, 226, 214, 0.6);
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    height: 80px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-logo {
+    width: auto;
+    height: 58px;
+    max-width: 80px;
+    object-fit: contain;
+    object-position: left center;
+  }
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+  .brand-text strong {
+    font-size: 16px;
+    color: var(--color-text);
+  }
+  .brand-text span {
+    font-size: 14px;
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+  .nav a {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-text);
+    transition: color 0.15s ease;
+  }
+  .nav a:hover {
+    color: var(--color-primary);
+  }
+  .header-cta {
+    padding: 11px 20px;
+    font-size: 16px;
+  }
+
+  @media (max-width: 900px) {
+    .nav { display: none; }
+  }
+  @media (max-width: 700px) {
+    .brand-text { display: none; }
+    .header-inner { height: 68px; }
+    .brand-logo { height: 48px; }
+    .header-cta { padding: 10px 16px; font-size: 14px; }
+  }
+</style>

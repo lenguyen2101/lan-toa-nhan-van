@@ -1,0 +1,723 @@
+---
+import { books } from '../data/books';
+
+const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
+---
+
+<section class="section books" id="chon-sach">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Chọn sách — Trao cơ hội</span>
+      <h2 class="section-title">
+        Tủ sách <em>Tri thức</em><br />
+        Thiện nguyện.
+      </h2>
+      <p class="section-lead">
+        Sáu đầu sách — sáu hành trình. Mỗi cuốn sách bạn ủng hộ sẽ trở thành một suất học bổng, một viên thuốc, một bữa cơm cho các em.
+      </p>
+    </div>
+
+    <div class="books-grid">
+      {books.map((book) => (
+        <article class="book-card" data-book-id={book.id}>
+          <button class="book-cover-btn" data-book-preview={book.id} aria-label={`Xem chi tiết ${book.title}`}>
+            <div class="book-cover-img">
+              <span class="cover-edition">{book.category} · {book.year}</span>
+              <img src={book.cover} alt={`Bìa sách ${book.title}`} loading="lazy" onerror="this.style.display='none'; this.parentElement.classList.add('no-img');" />
+              <div class="book-cover-fallback" aria-hidden="true">
+                <span class="cover-title">{book.title}</span>
+                <span class="cover-author">{book.author}</span>
+              </div>
+              <span class="cover-hover">
+                Đọc thử
+                <svg viewBox="0 0 16 12" width="16" height="12" aria-hidden="true">
+                  <path d="M1 6h13M9 1l5 5-5 5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </div>
+          </button>
+
+          <div class="book-body">
+            <h3 class="book-title" data-book-preview={book.id}>{book.title}</h3>
+            <p class="book-author" data-book-preview={book.id}>— {book.author}</p>
+
+            <div class="book-actions">
+              <button
+                class="book-btn book-btn-paper"
+                data-book-action="paper"
+                data-book-id={book.id}
+                data-book-title={book.title}
+                data-paper-price={book.paperPrice}
+              >
+                <span class="btn-label">Sách giấy</span>
+                <span class="btn-price">{fmt(book.paperPrice)}</span>
+              </button>
+              <button
+                class="book-btn book-btn-ebook"
+                data-book-action="ebook"
+                data-book-id={book.id}
+                data-book-title={book.title}
+              >
+                <span class="btn-label">Ebook</span>
+                <span class="btn-price">từ 20.000đ</span>
+              </button>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+
+  <!-- Preview Modal -->
+  <div class="modal" id="book-modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-panel" role="document">
+      <button class="modal-close" data-modal-close aria-label="Đóng">×</button>
+      <div class="modal-content" id="modal-content"><!-- injected --></div>
+    </div>
+  </div>
+</section>
+
+<script define:vars={{ books }}>
+  const modal = document.getElementById('book-modal');
+  const modalContent = document.getElementById('modal-content');
+
+  const fmt = (n) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
+
+  function openPreview(bookId) {
+    const book = books.find((b) => b.id === bookId);
+    if (!book || !modal || !modalContent) return;
+
+    modalContent.innerHTML = `
+      <div class="modal-grid">
+        <div class="modal-cover">
+          <div class="modal-cover-inner">
+            <img src="${book.cover}" alt="Bìa ${book.title}" onerror="this.style.display='none'; this.parentElement.classList.add('no-img');" />
+            <div class="modal-cover-fallback">
+              <span>${book.title}</span>
+              <small>${book.author}</small>
+            </div>
+          </div>
+        </div>
+        <div class="modal-info">
+          <h3 id="modal-title">${book.title}</h3>
+          <p class="modal-author">${book.author}</p>
+          <p class="modal-desc">${book.longDesc}</p>
+          <div class="modal-preview">
+            <h4>Đọc thử</h4>
+            <blockquote>${book.preview}</blockquote>
+          </div>
+          <div class="modal-reviews">
+            <h4>Nhận định</h4>
+            ${book.reviews.map((r) => `
+              <div class="review">
+                <p>"${r.quote}"</p>
+                <span><strong>${r.name}</strong> — ${r.role}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-primary" data-book-action="paper" data-book-id="${book.id}" data-book-title="${book.title}" data-paper-price="${book.paperPrice}">
+              Ủng hộ Sách giấy <small>${fmt(book.paperPrice)}</small>
+            </button>
+            <button class="btn btn-secondary" data-book-action="ebook" data-book-id="${book.id}" data-book-title="${book.title}">
+              Ủng hộ Ebook <small>từ 20.000đ</small>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => modal.classList.add('open'), 10);
+  }
+
+  function closePreview() {
+    if (!modal) return;
+    modal.classList.remove('open');
+    setTimeout(() => {
+      modal.hidden = true;
+      document.body.style.overflow = '';
+      if (modalContent) modalContent.innerHTML = '';
+    }, 200);
+  }
+
+  // Open preview
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('[data-book-preview]');
+    if (target) {
+      e.preventDefault();
+      openPreview(target.getAttribute('data-book-preview'));
+    }
+  });
+
+  // Close modal
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-modal-close]')) closePreview();
+  });
+
+  // Esc to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.hidden) closePreview();
+  });
+
+  // Auto-fill CTA — handled in DonationForm script, dispatches custom event
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-book-action]');
+    if (!btn) return;
+    const detail = {
+      action: btn.getAttribute('data-book-action'),
+      bookId: btn.getAttribute('data-book-id'),
+      bookTitle: btn.getAttribute('data-book-title'),
+      paperPrice: btn.getAttribute('data-paper-price'),
+    };
+    document.dispatchEvent(new CustomEvent('book:select', { detail }));
+    // Tracking hooks (FB Pixel + GA)
+    if (typeof window.fbq === 'function') {
+      window.fbq('trackCustom', 'BookSupportClick', detail);
+    }
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', 'book_support_click', detail);
+    }
+    closePreview();
+    document.getElementById('dang-ky')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+</script>
+
+<style>
+  .books {
+    background: var(--color-bg);
+  }
+  .section-head {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .section-head .section-lead {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .section-head {
+    text-align: center;
+    margin-bottom: 56px;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .section-head .section-title em {
+    color: var(--color-primary-dark);
+    font-style: italic;
+  }
+  .section-head .section-lead {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .books-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 36px 32px;
+  }
+
+  .book-card {
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .book-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .book-cover-btn {
+    width: 100%;
+    padding: 0;
+    cursor: pointer;
+    border: none;
+    background: none;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .book-cover-img {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    background: var(--color-bg-alt);
+    overflow: hidden;
+    border-radius: 3px;
+    box-shadow: 0 12px 28px rgba(42, 36, 25, 0.18), 0 4px 8px rgba(42, 36, 25, 0.08);
+    transition: box-shadow 0.4s ease;
+  }
+  .book-card:hover .book-cover-img {
+    box-shadow: 0 24px 48px rgba(42, 36, 25, 0.22), 0 8px 16px rgba(42, 36, 25, 0.12);
+  }
+  .book-cover-img::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 6px;
+    background: linear-gradient(90deg, rgba(0,0,0,0.18) 0%, transparent 100%);
+    z-index: 3;
+    pointer-events: none;
+  }
+  .book-cover-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+    z-index: 2;
+    position: relative;
+    filter: grayscale(0.1);
+  }
+  .book-card:hover .book-cover-img img {
+    transform: scale(1.05);
+    filter: grayscale(0);
+  }
+  .book-cover-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px;
+    text-align: center;
+    z-index: 1;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-pink) 100%);
+    color: white;
+  }
+  .cover-edition {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 4;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 5px 10px;
+    background: rgba(251, 246, 236, 0.95);
+    color: var(--color-text-ink);
+    border-radius: 2px;
+    backdrop-filter: blur(4px);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .cover-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+  .cover-author {
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .cover-hover {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    z-index: 4;
+    padding: 16px;
+    background: linear-gradient(180deg, transparent 0%, rgba(26, 22, 20, 0.85) 100%);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .book-card:hover .cover-hover {
+    transform: translateY(0);
+  }
+
+  .book-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 0 4px;
+  }
+  .book-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+    color: var(--color-text-ink);
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .book-title:hover { color: var(--color-primary-dark); }
+  .book-author {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    margin-bottom: 16px;
+    font-style: normal;
+    letter-spacing: 0.02em;
+    flex: 1;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .book-author:hover { color: var(--color-text-ink); }
+
+  .book-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .book-btn {
+    cursor: pointer;
+    padding: 12px 14px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-paper);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    transition: all 0.18s ease;
+  }
+  .book-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(42, 36, 25, 0.12);
+  }
+  .book-btn-paper {
+    background: var(--color-text-ink);
+    color: #F3EADA;
+    border-color: var(--color-text-ink);
+  }
+  .book-btn-paper:hover {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+  }
+  .book-btn-ebook {
+    border-color: var(--color-text-ink);
+    color: var(--color-text-ink);
+  }
+  .book-btn-ebook:hover {
+    background: var(--color-text-ink);
+    color: #F3EADA;
+  }
+  .btn-label {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .btn-price {
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0.85;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- Modal ---------- */
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .modal.open { opacity: 1; }
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 20, 20, 0.55);
+    backdrop-filter: blur(4px);
+  }
+  .modal-panel {
+    position: relative;
+    width: 100%;
+    max-width: 920px;
+    max-height: 88vh;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(10px);
+    transition: transform 0.25s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal.open .modal-panel { transform: translateY(0); }
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.06);
+    font-size: 24px;
+    line-height: 1;
+    z-index: 5;
+    color: var(--color-text);
+    transition: background 0.15s ease;
+  }
+  .modal-close:hover { background: rgba(0, 0, 0, 0.12); }
+  .modal-content {
+    overflow-y: auto;
+    padding: 0;
+  }
+
+  :global(.modal-grid) {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 0;
+  }
+  :global(.modal-cover) {
+    background: linear-gradient(135deg, var(--color-primary-soft), var(--color-bg-alt));
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  :global(.modal-cover-inner) {
+    position: relative;
+    width: 100%;
+    max-width: 240px;
+    aspect-ratio: 3/4;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-pink));
+  }
+  :global(.modal-cover-inner img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: relative;
+    z-index: 2;
+  }
+  :global(.modal-cover-fallback) {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 16px;
+    text-align: center;
+    z-index: 1;
+  }
+  :global(.modal-cover-fallback span) {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  :global(.modal-cover-fallback small) {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-top: 6px;
+  }
+  :global(.modal-info) {
+    padding: 36px 36px 32px;
+  }
+  :global(.modal-info h3) {
+    font-size: 26px;
+    margin-bottom: 4px;
+  }
+  :global(.modal-author) {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    font-style: italic;
+    margin-bottom: 16px;
+  }
+  :global(.modal-desc) {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--color-text);
+    margin-bottom: 24px;
+  }
+  :global(.modal-preview h4),
+  :global(.modal-reviews h4) {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-primary);
+    margin-bottom: 10px;
+  }
+  :global(.modal-preview blockquote) {
+    border-left: 3px solid var(--color-primary);
+    margin: 0 0 24px;
+    padding: 4px 0 4px 16px;
+    font-style: italic;
+    color: var(--color-text);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  :global(.modal-reviews .review) {
+    background: var(--color-bg-alt);
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+  }
+  :global(.modal-reviews .review p) {
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 4px;
+  }
+  :global(.modal-reviews .review span) {
+    font-size: 14px;
+    color: var(--color-text-muted);
+  }
+  :global(.modal-actions) {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  :global(.modal-actions .btn) {
+    flex: 1;
+    min-width: 180px;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 16px;
+  }
+  :global(.modal-actions .btn small) {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+
+  @media (max-width: 900px) {
+    .books-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px 20px;
+    }
+  }
+  @media (max-width: 720px) {
+    /* ---- Bottom sheet on mobile ---- */
+    .modal {
+      align-items: flex-end;
+      padding: 0;
+    }
+    .modal-panel {
+      max-width: 100%;
+      max-height: 92vh;
+      border-radius: 20px 20px 0 0;
+      transform: translateY(100%);
+      box-shadow: 0 -8px 32px rgba(42, 36, 25, 0.18);
+    }
+    .modal.open .modal-panel {
+      transform: translateY(0);
+    }
+    /* Drag handle indicator */
+    .modal-panel::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--color-rule);
+      z-index: 6;
+    }
+    .modal-close {
+      top: 20px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      font-size: 22px;
+    }
+    .modal-content {
+      padding-top: 14px;
+    }
+    :global(.modal-grid) {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    :global(.modal-cover) {
+      padding: 18px 18px 8px;
+      background: transparent;
+    }
+    :global(.modal-cover-inner) {
+      max-width: 130px;
+      margin: 0;
+    }
+    :global(.modal-info) {
+      padding: 8px 20px 24px;
+    }
+    :global(.modal-info h3) {
+      font-size: 22px;
+    }
+    :global(.modal-desc) {
+      font-size: 14px;
+    }
+  }
+  @media (max-width: 600px) {
+    .books-grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    /* Horizontal card layout: cover left, info right — no wrapper */
+    .book-card {
+      flex-direction: row;
+      gap: 14px;
+      align-items: stretch;
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+    .book-card:hover { transform: none; }
+    .book-cover-btn {
+      width: 100px;
+      flex-shrink: 0;
+      margin-bottom: 0;
+    }
+    .book-cover-img {
+      height: 100%;
+      box-shadow: 0 8px 18px rgba(42, 36, 25, 0.18), 0 2px 5px rgba(42, 36, 25, 0.08);
+    }
+    .cover-edition { display: none; }
+    .cover-hover { display: none; }
+    .book-body {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+    .book-title {
+      font-size: 18px;
+      line-height: 1.15;
+      margin-bottom: 4px;
+    }
+    .book-author {
+      font-size: 14px;
+      margin-bottom: 12px;
+      flex: initial;
+    }
+    .book-actions {
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: auto;
+    }
+    .book-btn {
+      padding: 8px 8px;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .btn-label {
+      font-size: 14px;
+    }
+    .btn-price {
+      font-size: 14px;
+    }
+  }
+</style>
