@@ -100,7 +100,7 @@ const row = [...testimonials, ...testimonials];
     </div>
   </div>
 
-  <div class="testimonials" aria-label="Lời nhắn từ những người đồng hành">
+  <div class="testimonials" aria-label="Lời nhắn từ những người đồng hành" hidden>
     <div class="testimonial-track">
       {row.map((t) => (
         <article class="testimonial">
@@ -129,7 +129,6 @@ const row = [...testimonials, ...testimonials];
     color: #F3EADA;
     overflow: hidden;
     margin-top: 40px;
-    padding-bottom: 56px;
   }
 
   /* ---- Top: image + content ---- */
@@ -164,7 +163,7 @@ const row = [...testimonials, ...testimonials];
   }
 
   .impact-content {
-    padding: 64px 56px 140px;
+    padding: 64px 56px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -375,7 +374,7 @@ const row = [...testimonials, ...testimonials];
       );
     }
     .impact-content {
-      padding: 48px 24px 100px;
+      padding: 48px 24px;
       gap: 28px;
     }
     .testimonials { margin-top: -70px; }
@@ -384,7 +383,7 @@ const row = [...testimonials, ...testimonials];
   @media (max-width: 600px) {
     .impact { margin-top: 32px; }
     .impact-content {
-      padding: 36px 20px 80px;
+      padding: 36px 20px;
       gap: 24px;
     }
     .testimonials { margin-top: -50px; }
