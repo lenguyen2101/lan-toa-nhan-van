@@ -70,18 +70,18 @@ const row = [...testimonials, ...testimonials];
 
     <div class="impact-content container">
       <h2 class="impact-headline">
-        Năm năm khởi sự —<br />
-        <em>lan toả nhân văn.</em>
+        Khởi Sự Từ Tâm —<br class="break-mobile" /> Hành động tử tế<br />
+        — <em>Tác động bền vững</em>
       </h2>
 
       <div class="stats-grid">
         <div class="stat">
-          <span class="stat-value"><small>Hơn</small> 65 <small>tỷ</small></span>
-          <span class="stat-label">Tổng ngân sách hoạt động</span>
+          <span class="stat-value">422 <small>tỷ đồng</small></span>
+          <span class="stat-label">Tổng kinh phí</span>
         </div>
         <div class="stat">
-          <span class="stat-value">58.329</span>
-          <span class="stat-label">Người có hoàn cảnh khó khăn được hỗ trợ</span>
+          <span class="stat-value">291.802</span>
+          <span class="stat-label">Người thụ hưởng</span>
         </div>
         <div class="stat">
           <span class="stat-value">4</span>
@@ -184,6 +184,10 @@ const row = [...testimonials, ...testimonials];
   .impact-headline em {
     font-style: italic;
     color: var(--color-primary);
+  }
+  /* Extra break only shown on small screens — mobile renders 3 lines. */
+  .impact-headline .break-mobile {
+    display: none;
   }
 
   /* Stats grid 2x2 */
@@ -390,6 +394,9 @@ const row = [...testimonials, ...testimonials];
     .impact-headline {
       font-size: 28px;
       line-height: 1.25;
+    }
+    .impact-headline .break-mobile {
+      display: initial;
     }
     .stat-value {
       font-size: 36px;
