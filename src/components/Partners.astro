@@ -1,8 +1,5 @@
 ---
 import { partners } from '../data/partners';
-
-// Duplicate the list for the mobile marquee. CSS hides the second half on desktop.
-const partnersRow = [...partners, ...partners];
 ---
 
 <section class="section partners" id="dong-hanh">
@@ -17,22 +14,15 @@ const partnersRow = [...partners, ...partners];
     </div>
 
     <div class="partners-grid">
-      {partnersRow.map((p, idx) => {
-        const isClone = idx >= partners.length;
-        return (
-          <div
-            class={`partner-tile${isClone ? ' is-clone' : ''}`}
-            title={p.name}
-            aria-hidden={isClone ? 'true' : undefined}
-          >
-            <div class="partner-logo-wrap">
-              <img src={p.logo} alt={p.name} loading="lazy" onerror="this.style.display='none'; this.parentElement.classList.add('no-img');" />
-              <span class="partner-fallback" aria-hidden="true">{p.name.split(' ').map(w => w[0]).join('').slice(0,2)}</span>
-            </div>
-            <span class="partner-name">{p.name}</span>
+      {partners.map((p) => (
+        <div class="partner-tile" title={p.name}>
+          <div class="partner-logo-wrap">
+            <img src={p.logo} alt={p.name} loading="lazy" onerror="this.style.display='none'; this.parentElement.classList.add('no-img');" />
+            <span class="partner-fallback" aria-hidden="true">{p.name.split(' ').map(w => w[0]).join('').slice(0,2)}</span>
           </div>
-        );
-      })}
+          <span class="partner-name">{p.name}</span>
+        </div>
+      ))}
     </div>
   </div>
 </section>
@@ -135,50 +125,36 @@ const partnersRow = [...partners, ...partners];
     font-weight: 500;
   }
 
-  /* Desktop / tablet: clones hidden, only originals shown in grid. */
-  .partner-tile.is-clone {
-    display: none;
-  }
-
   @media (max-width: 900px) {
     .partners-grid {
       grid-template-columns: repeat(3, 1fr);
     }
   }
   @media (max-width: 560px) {
-    /* Mobile: GPU-accelerated marquee. Same pattern as testimonial track. */
-    .partners {
-      overflow: hidden;
-    }
+    /* Mobile: user-driven horizontal scroll — same pattern as Projects. */
     .partners-grid {
       display: flex;
       grid-template-columns: none;
-      width: max-content;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+      scroll-padding-left: 20px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
       gap: 14px;
       margin: 0 -20px;
-      padding: 4px 0 4px 20px;
-      animation: scroll-left-partners 32s linear infinite;
+      padding: 4px 20px;
     }
-    .partners-grid:hover,
-    .partners-grid:focus-within {
-      animation-play-state: paused;
+    .partners-grid::-webkit-scrollbar {
+      display: none;
     }
-    .partner-tile,
-    .partner-tile.is-clone {
-      display: flex;
-      flex: 0 0 46vw;
+    .partner-tile {
+      flex: 0 0 46%;
+      scroll-snap-align: start;
     }
     .partner-logo-wrap {
       padding: 12px 14px;
     }
-  }
-
-  @keyframes scroll-left-partners {
-    from { transform: translateX(0); }
-    to { transform: translateX(calc(-50% - 7px)); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .partners-grid { animation: none; }
   }
 </style>
