@@ -202,7 +202,6 @@ import { projects } from '../data/projects';
 
     let rafId: number | null = null;
     let lastTime = 0;
-    let accumulator = 0;
     let paused = false;
     let resumeTimer: number | null = null;
     let clones: HTMLElement[] = [];
@@ -236,16 +235,13 @@ import { projects } from '../data/projects';
       lastTime = now;
 
       if (!paused) {
-        accumulator += SPEED * dt;
-        const px = Math.floor(accumulator);
-        if (px > 0) {
-          let next = grid.scrollLeft + px;
-          if (loopWidth > 0 && next >= loopWidth) {
-            next -= loopWidth; // instant wrap — clone content matches start
-          }
-          grid.scrollLeft = next;
-          accumulator -= px;
+        // Use fractional scrollLeft for sub-pixel smoothness.
+        // Modern browsers (Chrome 95+, Safari 14+) honor fractional values.
+        let next = grid.scrollLeft + SPEED * dt;
+        if (loopWidth > 0 && next >= loopWidth) {
+          next -= loopWidth; // instant wrap — clone content matches start
         }
+        grid.scrollLeft = next;
       }
       rafId = requestAnimationFrame(step);
     }
@@ -254,7 +250,6 @@ import { projects } from '../data/projects';
       if (rafId !== null) return;
       setupClones();
       lastTime = 0;
-      accumulator = 0;
       rafId = requestAnimationFrame(step);
     }
     function stop() {

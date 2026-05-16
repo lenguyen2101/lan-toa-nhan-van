@@ -13,7 +13,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
         Thiện nguyện.
       </h2>
       <p class="section-lead">
-        Sáu đầu sách — sáu hành trình. Mỗi cuốn sách bạn ủng hộ sẽ trở thành một suất học bổng, một viên thuốc, một bữa cơm cho các em.
+        Năm đầu sách — năm hành trình. Mỗi cuốn sách bạn ủng hộ sẽ trở thành một suất học bổng, một viên thuốc, một bữa cơm cho các em.
       </p>
     </div>
 
@@ -52,15 +52,16 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
                 <span class="btn-label">Sách giấy</span>
                 <span class="btn-price">{fmt(book.paperPrice)}</span>
               </button>
-              <button
-                class="book-btn book-btn-ebook"
-                data-book-action="ebook"
-                data-book-id={book.id}
-                data-book-title={book.title}
-              >
-                <span class="btn-label">Ebook</span>
-                <span class="btn-price">từ 20.000đ</span>
-              </button>
+              {book.previewUrl && (
+                <a
+                  class="book-btn book-btn-read"
+                  href={book.previewUrl}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <span class="btn-label">Đọc thử</span>
+                </a>
+              )}
             </div>
           </div>
         </article>
@@ -88,6 +89,56 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
     const book = books.find((b) => b.id === bookId);
     if (!book || !modal || !modalContent) return;
 
+    const longDescHtml = (book.longDesc || '')
+      .split('\n\n')
+      .filter((p) => p.trim().length > 0)
+      .map((p) => `<p class="modal-desc">${p}</p>`)
+      .join('');
+
+    const quotesSection =
+      book.quotes && book.quotes.length > 0
+        ? `
+          <div class="modal-preview">
+            <h4>Câu trích dẫn "đắt" từ sách</h4>
+            ${book.quotes.map((q) => `<blockquote>${q}</blockquote>`).join('')}
+          </div>
+        `
+        : book.preview
+        ? `
+          <div class="modal-preview">
+            <h4>Đọc thử</h4>
+            <blockquote>${book.preview}</blockquote>
+          </div>
+        `
+        : '';
+
+    const reviewsSection =
+      book.reviews && book.reviews.length > 0
+        ? `
+          <div class="modal-reviews">
+            <h4>Nhận định</h4>
+            ${book.reviews
+              .map(
+                (r) => `
+              <div class="review">
+                <p>"${r.quote}"</p>
+                <span><strong>${r.name}</strong> — ${r.role}</span>
+              </div>
+            `,
+              )
+              .join('')}
+          </div>
+        `
+        : '';
+
+    const readBtn = book.previewUrl
+      ? `
+        <a class="btn btn-secondary" href="${book.previewUrl}" target="_blank" rel="noopener">
+          Đọc thử
+        </a>
+      `
+      : '';
+
     modalContent.innerHTML = `
       <div class="modal-grid">
         <div class="modal-cover">
@@ -102,27 +153,14 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
         <div class="modal-info">
           <h3 id="modal-title">${book.title}</h3>
           <p class="modal-author">${book.author}</p>
-          <p class="modal-desc">${book.longDesc}</p>
-          <div class="modal-preview">
-            <h4>Đọc thử</h4>
-            <blockquote>${book.preview}</blockquote>
-          </div>
-          <div class="modal-reviews">
-            <h4>Nhận định</h4>
-            ${book.reviews.map((r) => `
-              <div class="review">
-                <p>"${r.quote}"</p>
-                <span><strong>${r.name}</strong> — ${r.role}</span>
-              </div>
-            `).join('')}
-          </div>
+          ${longDescHtml}
+          ${quotesSection}
+          ${reviewsSection}
           <div class="modal-actions">
             <button class="btn btn-primary" data-book-action="paper" data-book-id="${book.id}" data-book-title="${book.title}" data-paper-price="${book.paperPrice}">
               Ủng hộ Sách giấy <small>${fmt(book.paperPrice)}</small>
             </button>
-            <button class="btn btn-secondary" data-book-action="ebook" data-book-id="${book.id}" data-book-title="${book.title}">
-              Ủng hộ Ebook <small>từ 20.000đ</small>
-            </button>
+            ${readBtn}
           </div>
         </div>
       </div>
@@ -384,7 +422,9 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 2px;
+    min-height: 56px;
     transition: all 0.18s ease;
   }
   .book-btn:hover {
@@ -400,11 +440,15 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
     background: var(--color-primary-dark);
     border-color: var(--color-primary-dark);
   }
-  .book-btn-ebook {
+  .book-btn-ebook,
+  .book-btn-read {
     border-color: var(--color-text-ink);
     color: var(--color-text-ink);
+    text-decoration: none;
+    justify-content: center;
   }
-  .book-btn-ebook:hover {
+  .book-btn-ebook:hover,
+  .book-btn-read:hover {
     background: var(--color-text-ink);
     color: #F3EADA;
   }
@@ -652,7 +696,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
       margin: 0;
     }
     :global(.modal-info) {
-      padding: 8px 20px 24px;
+      padding: 8px 20px 44px;
     }
     :global(.modal-info h3) {
       font-size: 22px;

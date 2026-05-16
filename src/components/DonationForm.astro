@@ -7,12 +7,13 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
 <section class="section donation" id="dang-ky">
   <div class="container">
     <div class="section-head">
-      <span class="eyebrow">Hoàn tất ủng hộ</span>
+      <span class="eyebrow">Đăng ký tặng sách</span>
       <h2 class="section-title">
-        Trao gửi <em>yêu thương</em> — Nhận lại tri thức.
+        Trao tri thức<br />
+        Góp <em>yêu thương</em>
       </h2>
       <p class="section-lead">
-        Vui lòng chuyển khoản theo thông tin bên trái, sau đó điền form đăng ký để chúng tôi gửi sách / ebook đến bạn.
+        Vui lòng chuyển khoản theo thông tin bên trái, sau đó điền form đăng ký để chúng tôi gửi sách đến bạn.
       </p>
     </div>
 
@@ -23,38 +24,35 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
 
         <div class="bank-row">
           <span class="bank-label">Ngân hàng</span>
-          <span class="bank-value">MB Bank (Quân Đội)</span>
+          <span class="bank-value">Ngân hàng TMCP Quân đội (MBBank)</span>
         </div>
         <div class="bank-row">
           <span class="bank-label">Số tài khoản</span>
-          <button class="copyable" type="button" data-copy="3103xxxxxxx">
-            <span class="bank-value mono" id="bank-account">3103xxxxxxx</span>
-            <span class="copy-hint">Sao chép</span>
-          </button>
+          <span class="bank-value mono">3103</span>
         </div>
         <div class="bank-row">
-          <span class="bank-label">Chủ tài khoản</span>
-          <span class="bank-value">QUỸ KHỞI SỰ TỪ TÂM</span>
+          <span class="bank-label">Tên tài khoản</span>
+          <span class="bank-value">QUY KHOI SU TU TAM</span>
         </div>
         <div class="bank-row">
           <span class="bank-label">Nội dung CK</span>
-          <span class="bank-value mono">UNGHO [Họ tên] [SĐT]</span>
+          <span class="bank-value mono">[Ho ten] TANG SACH</span>
         </div>
 
         <div class="qr-wrap">
           <button class="qr-btn" type="button" id="qr-zoom-btn" aria-label="Phóng to mã QR">
             <div class="qr-img-wrap">
-              <img src="/images/qr-code.png" alt="Mã QR chuyển khoản" onerror="this.style.display='none'; this.parentElement.classList.add('no-qr');" />
+              <img src="/images/QR3103.png" alt="Mã QR chuyển khoản" onerror="this.style.display='none'; this.parentElement.classList.add('no-qr');" />
               <div class="qr-fallback">
                 <span>QR<br/>Code</span>
-                <small>Tải lên ảnh QR vào<br/>/public/images/qr-code.png</small>
+                <small>Tải lên ảnh QR vào<br/>/public/images/QR3103.png</small>
               </div>
             </div>
             <span class="qr-hint">Bấm để phóng to</span>
           </button>
 
           <a
-            href="/images/qr-code.png"
+            href="/images/QR3103.png"
             download="quy-khoi-su-tu-tam-qr.png"
             class="btn btn-secondary qr-download"
           >
@@ -67,33 +65,14 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
         </div>
 
         <p class="payment-note">
-          Sau khi chuyển khoản, vui lòng điền form bên cạnh và bấm "Xác nhận đã chuyển khoản". Quỹ sẽ liên hệ trong vòng 1–2 ngày làm việc.
+          Sau khi chuyển khoản, vui lòng điền form bên cạnh và bấm "Xác nhận đã chuyển khoản". Quỹ sẽ liên hệ các bạn để xác nhận trong vòng 1–2 ngày làm việc.
         </p>
       </aside>
 
       <!-- RIGHT: Form -->
       <form class="donation-form" id="donation-form" novalidate>
-        <div class="field-row">
-          <div class="field">
-            <label for="f-name">Họ và tên *</label>
-            <input id="f-name" name="fullName" type="text" required autocomplete="name" placeholder="Nguyễn Văn A" />
-            <small class="error" data-error-for="fullName"></small>
-          </div>
-          <div class="field">
-            <label for="f-phone">Số điện thoại *</label>
-            <input id="f-phone" name="phone" type="tel" required autocomplete="tel" placeholder="09xx xxx xxx" />
-            <small class="error" data-error-for="phone"></small>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="f-email">Email <span class="hint ebook-only">(Bắt buộc khi chọn Ebook)</span></label>
-          <input id="f-email" name="email" type="email" autocomplete="email" placeholder="email@example.com" />
-          <small class="error" data-error-for="email"></small>
-        </div>
-
-        <div class="field-row">
-          <div class="field">
+        <div class="field-row field-row-type-book" id="type-book-row">
+          <div class="field" id="f-type-field" hidden>
             <label for="f-type-trigger">Hình thức ủng hộ *</label>
             <div class="custom-select" id="f-type-wrap" data-name="donationType">
               <button type="button" class="cs-trigger" id="f-type-trigger" aria-haspopup="listbox" aria-expanded="false">
@@ -107,7 +86,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
                 <li role="option" data-value="ebook">Ebook</li>
                 <li role="option" data-value="both">Cả hai</li>
               </ul>
-              <input type="hidden" name="donationType" />
+              <input type="hidden" name="donationType" value="paper" />
             </div>
             <small class="error" data-error-for="donationType"></small>
           </div>
@@ -217,8 +196,27 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
           </div>
         </div>
 
+        <div class="field-row">
+          <div class="field">
+            <label for="f-name">Họ và tên *</label>
+            <input id="f-name" name="fullName" type="text" required autocomplete="name" placeholder="Nguyễn Văn A" />
+            <small class="error" data-error-for="fullName"></small>
+          </div>
+          <div class="field">
+            <label for="f-phone">Số điện thoại *</label>
+            <input id="f-phone" name="phone" type="tel" required autocomplete="tel" placeholder="09xx xxx xxx" />
+            <small class="error" data-error-for="phone"></small>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input id="f-email" name="email" type="email" autocomplete="email" placeholder="email@example.com" />
+          <small class="error" data-error-for="email"></small>
+        </div>
+
         <div class="field" id="address-field">
-          <label for="f-address">Địa chỉ nhận sách <span class="hint paper-only">(Bắt buộc khi chọn Sách giấy)</span></label>
+          <label for="f-address">Địa chỉ nhận sách *</label>
           <textarea id="f-address" name="address" rows="2" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"></textarea>
           <small class="error" data-error-for="address"></small>
         </div>
@@ -255,7 +253,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
       </p>
       <div class="success-details">
         <p><strong>Sách giấy:</strong> Dự kiến nhận trong vòng <strong>5–7 ngày làm việc</strong>.</p>
-        <p><strong>Ebook:</strong> Đường link tải sẽ được gửi qua email trong vòng <strong>24 giờ</strong>.</p>
+        <p hidden><strong>Ebook:</strong> Đường link tải sẽ được gửi qua email trong vòng <strong>24 giờ</strong>.</p>
       </div>
       <button type="button" class="btn btn-primary" data-modal-close>Đã hiểu</button>
     </div>
@@ -266,7 +264,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
     <div class="modal-backdrop" data-modal-close></div>
     <div class="qr-zoom-panel">
       <button class="modal-close" data-modal-close aria-label="Đóng">×</button>
-      <img src="/images/qr-code.png" alt="Mã QR chuyển khoản (phóng to)" onerror="this.style.display='none'; this.parentElement.classList.add('no-qr');" />
+      <img src="/images/QR3103.png" alt="Mã QR chuyển khoản (phóng to)" onerror="this.style.display='none'; this.parentElement.classList.add('no-qr');" />
       <div class="qr-fallback-large">QR Code (placeholder)</div>
     </div>
   </div>
@@ -391,6 +389,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
   const customAmountInput = document.getElementById('f-custom') as HTMLInputElement | null;
   const addressField = document.getElementById('address-field');
 
+
   const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
 
   function updateAmountBoxes() {
@@ -461,6 +460,12 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
 
   typeWrap?.addEventListener('change', updateAmountBoxes);
   bookWrap?.addEventListener('change', updatePaperPrice);
+
+  // Ebook flow is paused (client hasn't prepared ebooks yet).
+  // The donationType field is hidden — default it to "paper" so paper-box
+  // shows automatically and validation treats this as paper-only.
+  // Remove this when Ebook is brought back.
+  typeSelect?.setValue('paper', 'Sách giấy');
 
   // Ebook tier radio
   document.querySelectorAll('input[name="ebookTier"]').forEach((r) => {
@@ -912,6 +917,10 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 14px;
+  }
+  /* While Ebook flow is paused: donationType field is hidden, book select takes full width */
+  #type-book-row {
+    grid-template-columns: minmax(0, 1fr);
   }
   .field {
     display: flex;
