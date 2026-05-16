@@ -30,8 +30,6 @@ const SHEET_NAME = 'Donations';
 // Add/remove addresses here. Leave the array empty if you don't want email notifications.
 const NOTIFY_EMAILS = [
   'info@quykhoisututam.com',
-  'anhdtm@quykhoisututam.com',
-  'thutta4@quykhoisututam.com',
 ];
 const SOURCE_LABEL = 'Landing page tặng sách';
 // ==================
