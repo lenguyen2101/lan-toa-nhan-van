@@ -87,8 +87,8 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
         </div>
 
         <div class="field">
-          <label for="f-email">Email * <span class="hint">(Bắt buộc để nhận Ebook)</span></label>
-          <input id="f-email" name="email" type="email" required autocomplete="email" placeholder="email@example.com" />
+          <label for="f-email">Email <span class="hint ebook-only">(Bắt buộc khi chọn Ebook)</span></label>
+          <input id="f-email" name="email" type="email" autocomplete="email" placeholder="email@example.com" />
           <small class="error" data-error-for="email"></small>
         </div>
 
@@ -155,30 +155,6 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
               </div>
             </div>
 
-            <div class="paper-perf" aria-hidden="true"></div>
-
-            <div class="paper-foot">
-              <span class="paper-foot-item">
-                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M2 8.5h4l2-5 2 8 1.5-3h2.5"/>
-                </svg>
-                Miễn phí giao hàng toàn quốc
-              </span>
-              <span class="paper-foot-item">
-                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <rect x="2" y="3" width="12" height="11" rx="1"/>
-                  <path d="M5 6.5h6M5 9h6M5 11.5h4"/>
-                </svg>
-                Bao bì trang trọng
-              </span>
-              <span class="paper-foot-item">
-                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="8" cy="8" r="6"/>
-                  <path d="M5.5 8.5l2 2 3.5-4"/>
-                </svg>
-                Có thiệp gửi tặng
-              </span>
-            </div>
           </div>
         </div>
 
@@ -216,6 +192,27 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
             <div class="amount-input-wrap">
               <input id="f-custom" name="customAmount" type="text" inputmode="numeric" autocomplete="off" placeholder="VD: 200,000" />
               <span class="amount-currency" aria-hidden="true">đ</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total summary (only for "Cả hai" when both amounts present) -->
+        <div class="total-box" id="total-box" hidden>
+          <div class="total-inner">
+            <div class="total-left">
+              <span class="total-eyebrow">
+                <span class="ornament">✦</span>
+                Tổng cộng
+              </span>
+              <div class="total-breakdown">
+                <span><span class="total-tag">Sách giấy</span><span class="total-num" id="total-paper">0</span><span class="total-unit">đ</span></span>
+                <span class="total-plus">+</span>
+                <span><span class="total-tag">Ebook</span><span class="total-num" id="total-ebook">0</span><span class="total-unit">đ</span></span>
+              </div>
+            </div>
+            <div class="total-right">
+              <span class="total-sum" id="total-sum">0</span>
+              <span class="total-currency">đồng</span>
             </div>
           </div>
         </div>
@@ -407,6 +404,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
       addressField.classList.toggle('required', paperRequired);
     }
     updatePaperPrice();
+    updateTotal();
   }
 
   function updatePaperPrice() {
@@ -425,6 +423,40 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
       if (paperCurrency) paperCurrency.hidden = true;
       if (paperEmpty) paperEmpty.hidden = false;
     }
+    updateTotal();
+  }
+
+  function updateTotal() {
+    const totalBox = document.getElementById('total-box');
+    if (!totalBox || !typeSelect || !bookSelect) return;
+
+    if (typeSelect.getValue() !== 'both') {
+      totalBox.hidden = true;
+      return;
+    }
+
+    const paperPrice = Number(bookSelect.getSelectedOption()?.getAttribute('data-paper-price') || 0);
+    const tierRadio = document.querySelector('input[name="ebookTier"]:checked') as HTMLInputElement | null;
+    let ebookAmount = 0;
+    if (tierRadio) {
+      ebookAmount = tierRadio.value === 'custom'
+        ? Number((customAmountInput?.value || '').replace(/[^0-9]/g, '') || 0)
+        : Number(tierRadio.value || 0);
+    }
+
+    if (paperPrice <= 0 || ebookAmount <= 0) {
+      totalBox.hidden = true;
+      return;
+    }
+
+    const nf = new Intl.NumberFormat('vi-VN');
+    const paperEl = document.getElementById('total-paper');
+    const ebookEl = document.getElementById('total-ebook');
+    const sumEl = document.getElementById('total-sum');
+    if (paperEl) paperEl.textContent = nf.format(paperPrice);
+    if (ebookEl) ebookEl.textContent = nf.format(ebookAmount);
+    if (sumEl) sumEl.textContent = nf.format(paperPrice + ebookAmount);
+    totalBox.hidden = false;
   }
 
   typeWrap?.addEventListener('change', updateAmountBoxes);
@@ -437,6 +469,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
       if (customAmountWrap) customAmountWrap.hidden = v !== 'custom';
       if (v !== 'custom' && customAmountInput) customAmountInput.value = '';
       if (v === 'custom') setTimeout(() => customAmountInput?.focus(), 50);
+      updateTotal();
     });
   });
 
@@ -445,6 +478,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
     const target = e.target as HTMLInputElement;
     const raw = target.value.replace(/[^0-9]/g, '');
     target.value = raw ? Number(raw).toLocaleString('en-US') : '';
+    updateTotal();
   });
 
   // Listen to book:select from Books.astro
@@ -552,19 +586,20 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
       firstError ??= 'phone';
     }
 
-    const email = (data.get('email') || '').toString().trim();
-    if (!email) {
-      setError('email', 'Vui lòng nhập email.');
-      firstError ??= 'email';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('email', 'Email không hợp lệ.');
-      firstError ??= 'email';
-    }
-
     const type = (data.get('donationType') || '').toString();
     if (!type) {
       setError('donationType', 'Vui lòng chọn hình thức ủng hộ.');
       firstError ??= 'donationType';
+    }
+
+    const email = (data.get('email') || '').toString().trim();
+    const emailRequired = type === 'ebook' || type === 'both';
+    if (emailRequired && !email) {
+      setError('email', 'Vui lòng nhập email.');
+      firstError ??= 'email';
+    } else if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('email', 'Email không hợp lệ.');
+      firstError ??= 'email';
     }
 
     const book = (data.get('book') || '').toString();
@@ -617,6 +652,24 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
     if (payload.customAmount) {
       payload.customAmount = String(payload.customAmount).replace(/[^0-9]/g, '');
     }
+
+    const donationType = String(payload.donationType || '');
+    const includesPaper = donationType === 'paper' || donationType === 'both';
+    const includesEbook = donationType === 'ebook' || donationType === 'both';
+
+    const paperPrice = includesPaper
+      ? Number(bookSelect?.getSelectedOption()?.getAttribute('data-paper-price') || 0)
+      : 0;
+
+    let ebookAmount = 0;
+    if (includesEbook) {
+      const tier = String(payload.ebookTier || '');
+      ebookAmount = tier === 'custom' ? Number(payload.customAmount || 0) : Number(tier || 0);
+    }
+
+    payload.paperPrice = paperPrice;
+    payload.totalAmount = paperPrice + ebookAmount;
+
     payload.submittedAt = new Date().toISOString();
     payload.source = 'tang-sach-landing';
 
@@ -1036,7 +1089,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
   .paper-box-inner {
     background: var(--color-paper);
     border: 1px solid var(--color-rule);
-    padding: 18px 22px 14px;
+    padding: 16px 22px;
     border-radius: var(--radius-md);
     position: relative;
   }
@@ -1044,7 +1097,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     gap: 12px;
   }
   .paper-eyebrow {
@@ -1074,7 +1127,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
     justify-content: space-between;
     align-items: baseline;
     gap: 16px;
-    min-height: 50px;
+    min-height: 42px;
   }
   .paper-left {
     flex: 1;
@@ -1109,7 +1162,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
   .paper-price {
     font-family: var(--font-display);
     font-style: italic;
-    font-size: 38px;
+    font-size: 30px;
     font-weight: 600;
     color: var(--color-text-ink);
     line-height: 0.95;
@@ -1119,55 +1172,15 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
   .paper-price-currency {
     font-family: var(--font-display);
     font-style: italic;
-    font-size: 15px;
+    font-size: 14px;
     color: var(--color-primary-dark);
     letter-spacing: 0.02em;
   }
 
-  .paper-perf {
-    margin: 16px -24px 14px;
-    height: 1px;
-    background-image: linear-gradient(90deg, var(--color-rule) 50%, transparent 50%);
-    background-size: 8px 1px;
-    position: relative;
-  }
-  .paper-perf::before,
-  .paper-perf::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 12px;
-    height: 12px;
-    background: var(--color-surface);
-    border-radius: 50%;
-  }
-  .paper-perf::before { left: -6px; }
-  .paper-perf::after { right: -6px; }
-
-  .paper-foot {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    color: var(--color-text-muted);
-    font-size: 14px;
-  }
-  .paper-foot-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    letter-spacing: 0.01em;
-  }
-  .paper-foot-item svg {
-    color: var(--color-teal-dark);
-    flex-shrink: 0;
-  }
-
   @media (max-width: 540px) {
-    .paper-box-inner { padding: 18px 20px 16px; }
-    .paper-price { font-size: 30px; }
+    .paper-box-inner { padding: 16px 20px; }
+    .paper-price { font-size: 26px; }
     .paper-empty em { font-size: 18px; }
-    .paper-foot { gap: 10px 14px; font-size: 14px; }
     .paper-head { flex-direction: column; align-items: flex-start; gap: 4px; }
   }
   .amount-input-wrap {
@@ -1304,6 +1317,115 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
       grid-template-columns: repeat(2, 1fr);
     }
     .tier-amount { font-size: 22px; }
+  }
+
+  /* ---- Total summary (only for "Cả hai") ---- */
+  .total-box {
+    margin-top: -4px;
+  }
+  .total-inner {
+    background: var(--color-text-ink);
+    color: #F3EADA;
+    border-radius: 4px;
+    padding: 18px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .total-inner::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px dashed rgba(243, 234, 218, 0.18);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .total-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .total-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+  }
+  .total-eyebrow .ornament {
+    font-size: 14px;
+    color: var(--color-primary);
+  }
+  .total-breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 14px;
+    color: rgba(243, 234, 218, 0.7);
+  }
+  .total-tag {
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: rgba(243, 234, 218, 0.5);
+    margin-right: 6px;
+  }
+  .total-num {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  .total-unit {
+    margin-left: 2px;
+    opacity: 0.7;
+  }
+  .total-plus {
+    opacity: 0.4;
+    font-weight: 600;
+  }
+  .total-right {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .total-sum {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 42px;
+    font-weight: 600;
+    color: #F3EADA;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .total-currency {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 16px;
+    color: var(--color-primary);
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 560px) {
+    .total-inner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 18px 20px;
+    }
+    .total-right {
+      align-self: flex-end;
+    }
+    .total-sum { font-size: 34px; }
   }
 
   .submit-btn {

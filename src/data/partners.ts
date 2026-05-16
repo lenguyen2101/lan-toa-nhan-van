@@ -6,12 +6,9 @@ export type Partner = {
 };
 
 export const partners: Partner[] = [
-  { id: 'kim-oanh', name: 'Tập đoàn Kim Oanh', logo: '/images/partners/kim-oanh.png' },
-  { id: 'mb-bank', name: 'MB Bank', logo: '/images/partners/mb-bank.png' },
-  { id: 'nxb-tre', name: 'NXB Trẻ', logo: '/images/partners/nxb-tre.png' },
-  { id: 'nxb-kim-dong', name: 'NXB Kim Đồng', logo: '/images/partners/nxb-kim-dong.png' },
-  { id: 'tuoi-tre', name: 'Báo Tuổi Trẻ', logo: '/images/partners/tuoi-tre.png' },
-  { id: 'thanh-nien', name: 'Báo Thanh Niên', logo: '/images/partners/thanh-nien.png' },
-  { id: 'vtv', name: 'VTV', logo: '/images/partners/vtv.png' },
-  { id: 'vnexpress', name: 'VnExpress', logo: '/images/partners/vnexpress.png' },
+  { id: 'thuc-hien',    name: 'Đối tác thực hiện chương trình', logo: '/images/partners/doi-tac-thuc-hien.webp' },
+  { id: 'nha-tai-tro',  name: 'Nhà tài trợ',                    logo: '/images/partners/nha-tai-tro.png' },
+  { id: 'truyen-thong', name: 'Đối tác truyền thông',           logo: '/images/partners/doi-tac-truyen-thong.png' },
+  { id: 'kiem-toan',    name: 'Đơn vị kiểm toán',               logo: '/images/partners/don-vi-kiem-toan.png' },
+  { id: 'xuat-ban',     name: 'Đơn vị xuất bản và in ấn',       logo: '/images/partners/don-vi-xuat-ban.jpg' },
 ];

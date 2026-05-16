@@ -37,8 +37,10 @@ const HEADERS = [
   'Email',
   'Hình thức',
   'Cuốn sách',
+  'Giá sách giấy (VNĐ)',
   'Mức Ebook (VNĐ)',
   'Số tiền tuỳ tâm (VNĐ)',
+  'Tổng tiền (VNĐ)',
   'Địa chỉ nhận sách',
   'Lời nhắn',
   'Nguồn',
@@ -56,8 +58,10 @@ function doPost(e) {
       payload.email || '',
       formatDonationType_(payload.donationType),
       formatBookId_(payload.book),
+      payload.paperPrice ? Number(payload.paperPrice) : '',
       payload.ebookTier && payload.ebookTier !== 'custom' ? Number(payload.ebookTier) : '',
       payload.customAmount ? Number(payload.customAmount) : '',
+      payload.totalAmount ? Number(payload.totalAmount) : '',
       payload.address || '',
       payload.note || '',
       payload.source || SOURCE_LABEL,
@@ -135,6 +139,12 @@ function sendNotification_(payload, at) {
       : null,
     payload.customAmount
       ? `• Số tiền tuỳ tâm: ${Number(payload.customAmount).toLocaleString('vi-VN')} đ`
+      : null,
+    payload.paperPrice
+      ? `• Giá sách giấy: ${Number(payload.paperPrice).toLocaleString('vi-VN')} đ`
+      : null,
+    payload.totalAmount
+      ? `• TỔNG: ${Number(payload.totalAmount).toLocaleString('vi-VN')} đ`
       : null,
     payload.address ? `• Địa chỉ: ${payload.address}` : null,
     payload.note ? `• Lời nhắn: ${payload.note}` : null,

@@ -5,12 +5,12 @@ import { projects } from '../data/projects';
 <section class="section projects" id="du-an">
   <div class="container">
     <div class="section-head">
-      <span class="eyebrow">Các dự án tâm điểm</span>
+      <span class="eyebrow">Các dự án trọng điểm</span>
       <h2 class="section-title">
-        Bốn dự án — <em>một hành trình</em> nhân văn.
+        Quỹ <em>Khởi Sự Từ Tâm</em>
       </h2>
       <p class="section-lead">
-        Mỗi cuốn sách bạn ủng hộ sẽ trở thành nguồn lực cho các dự án dưới đây của Quỹ Khởi Sự Từ Tâm.
+        Được thành lập theo QĐ số 3039/QĐ của UBND tỉnh Bình Dương, nay trực thuộc quản lý của Sở Nội Vụ — UBND Thành phố Hồ Chí Minh. Số tiền gây quỹ từ hoạt động tặng sách sẽ được gửi đến các hoàn cảnh khó khăn trong dự án.
       </p>
     </div>
 
@@ -81,7 +81,7 @@ import { projects } from '../data/projects';
 
   .project-media {
     position: relative;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 2 / 1;
     overflow: hidden;
     background-color: var(--accent);
   }
@@ -159,9 +159,140 @@ import { projects } from '../data/projects';
   }
   @media (max-width: 560px) {
     .projects-grid {
-      grid-template-columns: 1fr;
+      display: flex;
+      grid-template-columns: none;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
       gap: 14px;
+      margin-left: -20px;
+      margin-right: -20px;
+      padding: 4px 20px;
     }
-    .project-media { aspect-ratio: 16 / 10; }
+    .projects-grid::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+      background: transparent;
+    }
+    .projects-grid::-webkit-scrollbar-thumb,
+    .projects-grid::-webkit-scrollbar-track {
+      background: transparent;
+      display: none;
+    }
+    .project-card {
+      flex: 0 0 78%;
+    }
+    .project-media { aspect-ratio: 2 / 1; }
   }
 </style>
+
+<script>
+  // Auto-scroll the project carousel on mobile only.
+  // Uses cloned cards for seamless infinite loop (no rewind animation).
+  // Pauses when user touches, resumes after idle.
+  const grid = document.querySelector<HTMLElement>('#du-an .projects-grid');
+  if (grid) {
+    const mqMobile = window.matchMedia('(max-width: 560px)');
+    const mqReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const SPEED = 22; // pixels per second
+    const RESUME_DELAY = 2500;
+
+    let rafId: number | null = null;
+    let lastTime = 0;
+    let accumulator = 0;
+    let paused = false;
+    let resumeTimer: number | null = null;
+    let clones: HTMLElement[] = [];
+    let loopWidth = 0;
+
+    function setupClones() {
+      removeClones();
+      const originals = Array.from(grid!.children) as HTMLElement[];
+      originals.forEach((child) => {
+        const clone = child.cloneNode(true) as HTMLElement;
+        clone.setAttribute('aria-hidden', 'true');
+        clone.classList.add('is-clone');
+        clone.querySelectorAll<HTMLElement>('a, button').forEach((el) => el.setAttribute('tabindex', '-1'));
+        grid!.appendChild(clone);
+        clones.push(clone);
+      });
+      // Distance to scroll before wrap-around equals position of first clone.
+      loopWidth = clones[0]?.offsetLeft ?? 0;
+    }
+
+    function removeClones() {
+      clones.forEach((c) => c.remove());
+      clones = [];
+      loopWidth = 0;
+    }
+
+    function step(now: number) {
+      if (!grid) return;
+      if (!lastTime) lastTime = now;
+      const dt = (now - lastTime) / 1000;
+      lastTime = now;
+
+      if (!paused) {
+        accumulator += SPEED * dt;
+        const px = Math.floor(accumulator);
+        if (px > 0) {
+          let next = grid.scrollLeft + px;
+          if (loopWidth > 0 && next >= loopWidth) {
+            next -= loopWidth; // instant wrap — clone content matches start
+          }
+          grid.scrollLeft = next;
+          accumulator -= px;
+        }
+      }
+      rafId = requestAnimationFrame(step);
+    }
+
+    function start() {
+      if (rafId !== null) return;
+      setupClones();
+      lastTime = 0;
+      accumulator = 0;
+      rafId = requestAnimationFrame(step);
+    }
+    function stop() {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      removeClones();
+    }
+
+    function shouldRun() {
+      return mqMobile.matches && !mqReduceMotion.matches;
+    }
+
+    if (shouldRun()) start();
+
+    mqMobile.addEventListener('change', () => {
+      if (shouldRun()) start();
+      else stop();
+    });
+    mqReduceMotion.addEventListener('change', () => {
+      if (shouldRun()) start();
+      else stop();
+    });
+
+    // Recompute loopWidth on resize (card widths change with viewport).
+    window.addEventListener('resize', () => {
+      if (clones.length > 0) {
+        loopWidth = clones[0]?.offsetLeft ?? 0;
+      }
+    });
+
+    const pauseAndScheduleResume = () => {
+      paused = true;
+      if (resumeTimer) clearTimeout(resumeTimer);
+      resumeTimer = window.setTimeout(() => { paused = false; }, RESUME_DELAY);
+    };
+    grid.addEventListener('touchstart', pauseAndScheduleResume, { passive: true });
+    grid.addEventListener('touchmove', pauseAndScheduleResume, { passive: true });
+  }
+</script>
