@@ -7,7 +7,7 @@
  * Triển khai:
  *  1. Tạo Google Sheet mới. Sheet đầu tiên đặt tên "Donations".
  *  2. Mở Extensions → Apps Script. Xoá hết code mẫu, paste file này vào.
- *  3. Cập nhật NOTIFY_EMAIL bên dưới (nếu muốn nhận mail).
+ *  3. Cập nhật NOTIFY_EMAILS bên dưới (nếu muốn nhận mail).
  *  4. Bấm Save (Ctrl/Cmd + S), đặt tên project bất kỳ.
  *  5. Bấm Deploy → New deployment → chọn type "Web app":
  *       - Description: "Form endpoint v1"
@@ -26,7 +26,13 @@
 
 // ===== CONFIG =====
 const SHEET_NAME = 'Donations';
-const NOTIFY_EMAIL = ''; // VD: 'team@quykhoisututam.com' — để rỗng nếu không muốn nhận mail
+// Recipients receive an email each time the form is submitted.
+// Add/remove addresses here. Leave the array empty if you don't want email notifications.
+const NOTIFY_EMAILS = [
+  'info@quykhoisututam.com',
+  'anhdtm@quykhoisututam.com',
+  'thutta4@quykhoisututam.com',
+];
 const SOURCE_LABEL = 'Landing page tặng sách';
 // ==================
 
@@ -68,7 +74,7 @@ function doPost(e) {
     ];
     sheet.appendRow(row);
 
-    if (NOTIFY_EMAIL && NOTIFY_EMAIL.indexOf('@') > -1) {
+    if (NOTIFY_EMAILS && NOTIFY_EMAILS.length > 0) {
       sendNotification_(payload, row[0]);
     }
 
@@ -152,7 +158,7 @@ function sendNotification_(payload, at) {
     `Thời gian: ${Utilities.formatDate(at, 'Asia/Ho_Chi_Minh', "HH:mm 'ngày' dd/MM/yyyy")}`,
   ].filter(Boolean).join('\n');
 
-  MailApp.sendEmail(NOTIFY_EMAIL, subject, body);
+  MailApp.sendEmail(NOTIFY_EMAILS.join(','), subject, body);
 }
 
 function jsonResponse_(obj) {

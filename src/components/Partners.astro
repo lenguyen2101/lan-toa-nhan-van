@@ -1,5 +1,8 @@
 ---
 import { partners } from '../data/partners';
+
+// Duplicate the list for the mobile marquee. CSS hides the second half on desktop.
+const partnersRow = [...partners, ...partners];
 ---
 
 <section class="section partners" id="dong-hanh">
@@ -14,15 +17,22 @@ import { partners } from '../data/partners';
     </div>
 
     <div class="partners-grid">
-      {partners.map((p) => (
-        <div class="partner-tile" title={p.name}>
-          <div class="partner-logo-wrap">
-            <img src={p.logo} alt={p.name} loading="lazy" onerror="this.style.display='none'; this.parentElement.classList.add('no-img');" />
-            <span class="partner-fallback" aria-hidden="true">{p.name.split(' ').map(w => w[0]).join('').slice(0,2)}</span>
+      {partnersRow.map((p, idx) => {
+        const isClone = idx >= partners.length;
+        return (
+          <div
+            class={`partner-tile${isClone ? ' is-clone' : ''}`}
+            title={p.name}
+            aria-hidden={isClone ? 'true' : undefined}
+          >
+            <div class="partner-logo-wrap">
+              <img src={p.logo} alt={p.name} loading="lazy" onerror="this.style.display='none'; this.parentElement.classList.add('no-img');" />
+              <span class="partner-fallback" aria-hidden="true">{p.name.split(' ').map(w => w[0]).join('').slice(0,2)}</span>
+            </div>
+            <span class="partner-name">{p.name}</span>
           </div>
-          <span class="partner-name">{p.name}</span>
-        </div>
-      ))}
+        );
+      })}
     </div>
   </div>
 </section>
@@ -125,141 +135,50 @@ import { partners } from '../data/partners';
     font-weight: 500;
   }
 
+  /* Desktop / tablet: clones hidden, only originals shown in grid. */
+  .partner-tile.is-clone {
+    display: none;
+  }
+
   @media (max-width: 900px) {
     .partners-grid {
       grid-template-columns: repeat(3, 1fr);
     }
   }
   @media (max-width: 560px) {
+    /* Mobile: GPU-accelerated marquee. Same pattern as testimonial track. */
+    .partners {
+      overflow: hidden;
+    }
     .partners-grid {
       display: flex;
       grid-template-columns: none;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
+      width: max-content;
       gap: 14px;
-      margin-left: -20px;
-      margin-right: -20px;
-      padding: 4px 20px;
+      margin: 0 -20px;
+      padding: 4px 0 4px 20px;
+      animation: scroll-left-partners 32s linear infinite;
     }
-    .partners-grid::-webkit-scrollbar {
-      display: none;
-      width: 0;
-      height: 0;
-      background: transparent;
+    .partners-grid:hover,
+    .partners-grid:focus-within {
+      animation-play-state: paused;
     }
-    .partners-grid::-webkit-scrollbar-thumb,
-    .partners-grid::-webkit-scrollbar-track {
-      background: transparent;
-      display: none;
-    }
-    .partner-tile {
-      flex: 0 0 46%;
+    .partner-tile,
+    .partner-tile.is-clone {
+      display: flex;
+      flex: 0 0 46vw;
     }
     .partner-logo-wrap {
       padding: 12px 14px;
     }
   }
-</style>
 
-<script>
-  // Auto-scroll the partners carousel on mobile only.
-  // Uses cloned tiles for seamless infinite loop (no rewind animation).
-  // Pauses when user touches, resumes after idle.
-  const grid = document.querySelector<HTMLElement>('#dong-hanh .partners-grid');
-  if (grid) {
-    const mqMobile = window.matchMedia('(max-width: 560px)');
-    const mqReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const SPEED = 18; // pixels per second — slow
-    const RESUME_DELAY = 2500;
-
-    let rafId: number | null = null;
-    let lastTime = 0;
-    let paused = false;
-    let resumeTimer: number | null = null;
-    let clones: HTMLElement[] = [];
-    let loopWidth = 0;
-
-    function setupClones() {
-      removeClones();
-      const originals = Array.from(grid!.children) as HTMLElement[];
-      originals.forEach((child) => {
-        const clone = child.cloneNode(true) as HTMLElement;
-        clone.setAttribute('aria-hidden', 'true');
-        clone.classList.add('is-clone');
-        clone.querySelectorAll<HTMLElement>('a, button').forEach((el) => el.setAttribute('tabindex', '-1'));
-        grid!.appendChild(clone);
-        clones.push(clone);
-      });
-      loopWidth = clones[0]?.offsetLeft ?? 0;
-    }
-
-    function removeClones() {
-      clones.forEach((c) => c.remove());
-      clones = [];
-      loopWidth = 0;
-    }
-
-    function step(now: number) {
-      if (!grid) return;
-      if (!lastTime) lastTime = now;
-      const dt = (now - lastTime) / 1000;
-      lastTime = now;
-
-      if (!paused) {
-        // Use fractional scrollLeft for sub-pixel smoothness.
-        let next = grid.scrollLeft + SPEED * dt;
-        if (loopWidth > 0 && next >= loopWidth) {
-          next -= loopWidth;
-        }
-        grid.scrollLeft = next;
-      }
-      rafId = requestAnimationFrame(step);
-    }
-
-    function start() {
-      if (rafId !== null) return;
-      setupClones();
-      lastTime = 0;
-      rafId = requestAnimationFrame(step);
-    }
-    function stop() {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      removeClones();
-    }
-
-    function shouldRun() {
-      return mqMobile.matches && !mqReduceMotion.matches;
-    }
-
-    if (shouldRun()) start();
-
-    mqMobile.addEventListener('change', () => {
-      if (shouldRun()) start();
-      else stop();
-    });
-    mqReduceMotion.addEventListener('change', () => {
-      if (shouldRun()) start();
-      else stop();
-    });
-
-    window.addEventListener('resize', () => {
-      if (clones.length > 0) {
-        loopWidth = clones[0]?.offsetLeft ?? 0;
-      }
-    });
-
-    const pauseAndScheduleResume = () => {
-      paused = true;
-      if (resumeTimer) clearTimeout(resumeTimer);
-      resumeTimer = window.setTimeout(() => { paused = false; }, RESUME_DELAY);
-    };
-    grid.addEventListener('touchstart', pauseAndScheduleResume, { passive: true });
-    grid.addEventListener('touchmove', pauseAndScheduleResume, { passive: true });
+  @keyframes scroll-left-partners {
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(-50% - 7px)); }
   }
-</script>
+
+  @media (prefers-reduced-motion: reduce) {
+    .partners-grid { animation: none; }
+  }
+</style>

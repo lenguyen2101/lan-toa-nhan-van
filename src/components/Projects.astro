@@ -158,136 +158,28 @@ import { projects } from '../data/projects';
     }
   }
   @media (max-width: 560px) {
+    /* Mobile: user-driven horizontal scroll — no auto-scroll. */
     .projects-grid {
       display: flex;
       grid-template-columns: none;
       overflow-x: auto;
       overflow-y: hidden;
       -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+      scroll-padding-left: 20px;
       scrollbar-width: none;
       -ms-overflow-style: none;
       gap: 14px;
-      margin-left: -20px;
-      margin-right: -20px;
+      margin: 0 -20px;
       padding: 4px 20px;
     }
     .projects-grid::-webkit-scrollbar {
       display: none;
-      width: 0;
-      height: 0;
-      background: transparent;
-    }
-    .projects-grid::-webkit-scrollbar-thumb,
-    .projects-grid::-webkit-scrollbar-track {
-      background: transparent;
-      display: none;
     }
     .project-card {
       flex: 0 0 78%;
+      scroll-snap-align: start;
     }
     .project-media { aspect-ratio: 2 / 1; }
   }
 </style>
-
-<script>
-  // Auto-scroll the project carousel on mobile only.
-  // Uses cloned cards for seamless infinite loop (no rewind animation).
-  // Pauses when user touches, resumes after idle.
-  const grid = document.querySelector<HTMLElement>('#du-an .projects-grid');
-  if (grid) {
-    const mqMobile = window.matchMedia('(max-width: 560px)');
-    const mqReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const SPEED = 22; // pixels per second
-    const RESUME_DELAY = 2500;
-
-    let rafId: number | null = null;
-    let lastTime = 0;
-    let paused = false;
-    let resumeTimer: number | null = null;
-    let clones: HTMLElement[] = [];
-    let loopWidth = 0;
-
-    function setupClones() {
-      removeClones();
-      const originals = Array.from(grid!.children) as HTMLElement[];
-      originals.forEach((child) => {
-        const clone = child.cloneNode(true) as HTMLElement;
-        clone.setAttribute('aria-hidden', 'true');
-        clone.classList.add('is-clone');
-        clone.querySelectorAll<HTMLElement>('a, button').forEach((el) => el.setAttribute('tabindex', '-1'));
-        grid!.appendChild(clone);
-        clones.push(clone);
-      });
-      // Distance to scroll before wrap-around equals position of first clone.
-      loopWidth = clones[0]?.offsetLeft ?? 0;
-    }
-
-    function removeClones() {
-      clones.forEach((c) => c.remove());
-      clones = [];
-      loopWidth = 0;
-    }
-
-    function step(now: number) {
-      if (!grid) return;
-      if (!lastTime) lastTime = now;
-      const dt = (now - lastTime) / 1000;
-      lastTime = now;
-
-      if (!paused) {
-        // Use fractional scrollLeft for sub-pixel smoothness.
-        // Modern browsers (Chrome 95+, Safari 14+) honor fractional values.
-        let next = grid.scrollLeft + SPEED * dt;
-        if (loopWidth > 0 && next >= loopWidth) {
-          next -= loopWidth; // instant wrap — clone content matches start
-        }
-        grid.scrollLeft = next;
-      }
-      rafId = requestAnimationFrame(step);
-    }
-
-    function start() {
-      if (rafId !== null) return;
-      setupClones();
-      lastTime = 0;
-      rafId = requestAnimationFrame(step);
-    }
-    function stop() {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      removeClones();
-    }
-
-    function shouldRun() {
-      return mqMobile.matches && !mqReduceMotion.matches;
-    }
-
-    if (shouldRun()) start();
-
-    mqMobile.addEventListener('change', () => {
-      if (shouldRun()) start();
-      else stop();
-    });
-    mqReduceMotion.addEventListener('change', () => {
-      if (shouldRun()) start();
-      else stop();
-    });
-
-    // Recompute loopWidth on resize (card widths change with viewport).
-    window.addEventListener('resize', () => {
-      if (clones.length > 0) {
-        loopWidth = clones[0]?.offsetLeft ?? 0;
-      }
-    });
-
-    const pauseAndScheduleResume = () => {
-      paused = true;
-      if (resumeTimer) clearTimeout(resumeTimer);
-      resumeTimer = window.setTimeout(() => { paused = false; }, RESUME_DELAY);
-    };
-    grid.addEventListener('touchstart', pauseAndScheduleResume, { passive: true });
-    grid.addEventListener('touchmove', pauseAndScheduleResume, { passive: true });
-  }
-</script>
