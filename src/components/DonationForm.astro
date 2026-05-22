@@ -95,6 +95,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
                     inputmode="numeric"
                     value="1"
                     min="1"
+                    max="99"
                     aria-label={`Số lượng ${b.title}`}
                   />
                   <button type="button" class="bp-plus" aria-label={`Tăng số lượng ${b.title}`}>+</button>
@@ -353,6 +354,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
   const addressField = document.getElementById('address-field');
 
   const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
+  const MAX_QTY = 99;
 
   // ---------- Book picker (multi-select + quantity) ----------
   type BookEntry = { title: string; price: number };
@@ -369,7 +371,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
 
   // Pure state update — no DOM side effects on the picker row.
   function setCartQty(bookId: string, qty: number) {
-    const n = Math.max(0, Math.floor(qty));
+    const n = Math.max(0, Math.min(MAX_QTY, Math.floor(qty)));
     if (n <= 0) cart.delete(bookId);
     else cart.set(bookId, n);
   }
@@ -450,12 +452,14 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
       renderCart();
     });
     qtyInput.addEventListener('blur', () => {
-      // Commit on blur: if value is 0/empty, collapse stepper now.
+      // Commit on blur: collapse stepper if qty went to 0; otherwise sync
+      // the input display in case the typed value exceeded MAX_QTY (and got
+      // clamped silently in setCartQty).
       const current = cart.get(id) || 0;
       if (current <= 0) {
         syncRowUI(id);
         renderCart();
-      } else if (!qtyInput.value) {
+      } else {
         qtyInput.value = String(current);
       }
     });
