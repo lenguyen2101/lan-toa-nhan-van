@@ -95,7 +95,6 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
                     inputmode="numeric"
                     value="1"
                     min="1"
-                    max="10"
                     aria-label={`Số lượng ${b.title}`}
                   />
                   <button type="button" class="bp-plus" aria-label={`Tăng số lượng ${b.title}`}>+</button>
@@ -354,7 +353,6 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
   const addressField = document.getElementById('address-field');
 
   const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
-  const MAX_QTY = 10;
 
   // ---------- Book picker (multi-select + quantity) ----------
   type BookEntry = { title: string; price: number };
@@ -369,21 +367,33 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
   // State: bookId -> quantity (only entries with qty >= 1 are "selected").
   const cart = new Map<string, number>();
 
-  function setQty(bookId: string, qty: number, opts: { skipRender?: boolean } = {}) {
-    const clamped = Math.max(0, Math.min(MAX_QTY, Math.floor(qty)));
-    if (clamped <= 0) cart.delete(bookId);
-    else cart.set(bookId, clamped);
+  // Pure state update — no DOM side effects on the picker row.
+  function setCartQty(bookId: string, qty: number) {
+    const n = Math.max(0, Math.floor(qty));
+    if (n <= 0) cart.delete(bookId);
+    else cart.set(bookId, n);
+  }
 
+  // Sync row UI (checkbox, stepper visibility, qty input value) with cart state.
+  // Skip this while the user is actively typing in the input — hiding the
+  // stepper would yank focus and dismiss the mobile keyboard.
+  function syncRowUI(bookId: string) {
     const item = document.querySelector<HTMLLIElement>(`.book-picker-item[data-book-id="${bookId}"]`);
-    if (item) {
-      const check = item.querySelector<HTMLInputElement>('.bp-check');
-      const stepper = item.querySelector<HTMLElement>('.bp-stepper');
-      const qtyInput = item.querySelector<HTMLInputElement>('.bp-qty');
-      if (check) check.checked = clamped > 0;
-      if (stepper) stepper.hidden = clamped <= 0;
-      if (qtyInput) qtyInput.value = String(clamped > 0 ? clamped : 1);
-      item.classList.toggle('is-selected', clamped > 0);
-    }
+    if (!item) return;
+    const n = cart.get(bookId) || 0;
+    const check = item.querySelector<HTMLInputElement>('.bp-check');
+    const stepper = item.querySelector<HTMLElement>('.bp-stepper');
+    const qtyInput = item.querySelector<HTMLInputElement>('.bp-qty');
+    if (check) check.checked = n > 0;
+    if (stepper) stepper.hidden = n <= 0;
+    if (qtyInput) qtyInput.value = n > 0 ? String(n) : '1';
+    item.classList.toggle('is-selected', n > 0);
+  }
+
+  // Full update: state + UI + cart summary.
+  function setQty(bookId: string, qty: number, opts: { skipRender?: boolean } = {}) {
+    setCartQty(bookId, qty);
+    syncRowUI(bookId);
     if (!opts.skipRender) renderCart();
   }
 
@@ -432,13 +442,22 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
       setQty(id, current + 1);
     });
     qtyInput.addEventListener('input', () => {
+      // Update cart silently while typing — don't touch row UI (would
+      // dismiss the mobile numeric keyboard if stepper gets hidden).
       const raw = qtyInput.value.replace(/[^0-9]/g, '');
       const n = raw ? parseInt(raw, 10) : 0;
-      setQty(id, n);
+      setCartQty(id, n);
+      renderCart();
     });
     qtyInput.addEventListener('blur', () => {
-      // If user cleared the input, restore to 1 if still checked.
-      if (!qtyInput.value && cart.has(id)) setQty(id, 1);
+      // Commit on blur: if value is 0/empty, collapse stepper now.
+      const current = cart.get(id) || 0;
+      if (current <= 0) {
+        syncRowUI(id);
+        renderCart();
+      } else if (!qtyInput.value) {
+        qtyInput.value = String(current);
+      }
     });
   });
 
@@ -1610,6 +1629,10 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
     background: transparent;
     cursor: pointer;
     transition: background-color 0.15s ease;
+    /* Prevent iOS Safari double-tap-zoom when user mashes +/- quickly. */
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
   }
   .bp-minus:hover,
   .bp-plus:hover {
