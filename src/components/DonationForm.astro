@@ -13,7 +13,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
         Góp <em>yêu thương</em>
       </h2>
       <p class="section-lead">
-        Vui lòng chuyển khoản theo thông tin bên trái, sau đó điền form đăng ký để chúng tôi gửi sách đến bạn.
+        Vui lòng chuyển khoản theo thông tin bên dưới, sau đó điền form đăng ký để chúng tôi gửi sách đến bạn.
       </p>
     </div>
 
@@ -71,73 +71,62 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
 
       <!-- RIGHT: Form -->
       <form class="donation-form" id="donation-form" novalidate>
-        <div class="field-row field-row-type-book" id="type-book-row">
-          <div class="field" id="f-type-field" hidden>
-            <label for="f-type-trigger">Hình thức ủng hộ *</label>
-            <div class="custom-select" id="f-type-wrap" data-name="donationType">
-              <button type="button" class="cs-trigger" id="f-type-trigger" aria-haspopup="listbox" aria-expanded="false">
-                <span class="cs-value is-placeholder">-- Chọn hình thức --</span>
-                <svg class="cs-arrow" viewBox="0 0 12 8" width="12" height="8" aria-hidden="true">
-                  <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                </svg>
-              </button>
-              <ul class="cs-options" role="listbox" hidden>
-                <li role="option" data-value="paper">Sách giấy</li>
-                <li role="option" data-value="ebook">Ebook</li>
-                <li role="option" data-value="both">Cả hai</li>
-              </ul>
-              <input type="hidden" name="donationType" value="paper" />
-            </div>
-            <small class="error" data-error-for="donationType"></small>
-          </div>
-          <div class="field">
-            <label for="f-book-trigger">Cuốn sách quan tâm *</label>
-            <div class="custom-select" id="f-book-wrap" data-name="book">
-              <button type="button" class="cs-trigger" id="f-book-trigger" aria-haspopup="listbox" aria-expanded="false">
-                <span class="cs-value is-placeholder">-- Chọn sách --</span>
-                <svg class="cs-arrow" viewBox="0 0 12 8" width="12" height="8" aria-hidden="true">
-                  <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                </svg>
-              </button>
-              <ul class="cs-options" role="listbox" hidden>
-                {books.map((b) => (
-                  <li role="option" data-value={b.id} data-paper-price={b.paperPrice}>{b.title}</li>
-                ))}
-              </ul>
-              <input type="hidden" name="book" />
-            </div>
-            <small class="error" data-error-for="book"></small>
-          </div>
+        <!-- Hidden donation type (ebook flow paused) — kept so old logic still has a value. -->
+        <input type="hidden" name="donationType" value="paper" id="f-donation-type" />
+
+        <!-- Book picker: multi-select with quantity (1–10 per book) -->
+        <div class="field book-picker-field" id="f-books-field">
+          <label class="book-picker-label">Chọn sách ủng hộ *</label>
+          <ul class="book-picker">
+            {books.map((b) => (
+              <li class="book-picker-item" data-book-id={b.id} data-price={b.paperPrice}>
+                <label class="bp-row">
+                  <input type="checkbox" class="bp-check" value={b.id} />
+                  <span class="bp-info">
+                    <span class="bp-title">{b.title}</span>
+                    <span class="bp-price">{fmt(b.paperPrice)}</span>
+                  </span>
+                </label>
+                <div class="bp-stepper" hidden>
+                  <button type="button" class="bp-minus" aria-label={`Giảm số lượng ${b.title}`}>−</button>
+                  <input
+                    type="number"
+                    class="bp-qty"
+                    inputmode="numeric"
+                    value="1"
+                    min="1"
+                    max="10"
+                    aria-label={`Số lượng ${b.title}`}
+                  />
+                  <button type="button" class="bp-plus" aria-label={`Tăng số lượng ${b.title}`}>+</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <small class="error" data-error-for="items"></small>
         </div>
 
-        <!-- Paper price box (editorial bookplate) -->
-        <div class="paper-box" id="paper-box" hidden>
-          <div class="paper-box-inner">
-            <div class="paper-head">
-              <span class="paper-eyebrow">
+        <!-- Cart summary: appears when ≥1 book is selected -->
+        <div class="cart-box" id="cart-box" hidden>
+          <div class="cart-inner">
+            <div class="cart-head">
+              <span class="cart-eyebrow">
                 <span class="ornament">✦</span>
-                Ấn bản · Sách giấy
+                Danh sách đã chọn
               </span>
-              <span class="paper-edition">Tủ Sách Tri Thức · 2026</span>
             </div>
-
-            <div class="paper-body">
-              <div class="paper-left">
-                <span class="paper-empty" id="paper-empty">
-                  <em>Vui lòng chọn sách</em>
-                  <small>để xem mức ủng hộ</small>
-                </span>
-              </div>
-              <div class="paper-right">
-                <span class="paper-price" id="paper-price-display" hidden></span>
-                <span class="paper-price-currency" id="paper-price-currency" hidden>đồng</span>
-              </div>
+            <ul class="cart-items" id="cart-items"></ul>
+            <div class="cart-total-row">
+              <span class="cart-total-label">Tổng (<span id="cart-count">0</span> cuốn)</span>
+              <span class="cart-total-amount">
+                <span class="cart-total-value" id="cart-total-value">0</span>
+                <span class="cart-total-currency">đ</span>
+              </span>
             </div>
-
           </div>
         </div>
 
-        <!-- Ebook tiers box (editorial denomination cards) -->
+        <!-- Ebook tiers box — flow paused, kept for future re-enable. -->
         <div class="ebook-box" id="ebook-box" hidden>
           <div class="ebook-head">
             <span class="paper-eyebrow">
@@ -171,27 +160,6 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
             <div class="amount-input-wrap">
               <input id="f-custom" name="customAmount" type="text" inputmode="numeric" autocomplete="off" placeholder="VD: 200,000" />
               <span class="amount-currency" aria-hidden="true">đ</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Total summary (only for "Cả hai" when both amounts present) -->
-        <div class="total-box" id="total-box" hidden>
-          <div class="total-inner">
-            <div class="total-left">
-              <span class="total-eyebrow">
-                <span class="ornament">✦</span>
-                Tổng cộng
-              </span>
-              <div class="total-breakdown">
-                <span><span class="total-tag">Sách giấy</span><span class="total-num" id="total-paper">0</span><span class="total-unit">đ</span></span>
-                <span class="total-plus">+</span>
-                <span><span class="total-tag">Ebook</span><span class="total-num" id="total-ebook">0</span><span class="total-unit">đ</span></span>
-              </div>
-            </div>
-            <div class="total-right">
-              <span class="total-sum" id="total-sum">0</span>
-              <span class="total-currency">đồng</span>
             </div>
           </div>
         </div>
@@ -378,137 +346,121 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
 
   // ---------- Form refs ----------
   const form = document.getElementById('donation-form') as HTMLFormElement | null;
-  const typeSelect = customSelects.get('donationType');
-  const bookSelect = customSelects.get('book');
-  const typeWrap = document.getElementById('f-type-wrap');
-  const bookWrap = document.getElementById('f-book-wrap');
-  const paperBox = document.getElementById('paper-box');
-  const ebookBox = document.getElementById('ebook-box');
-  const paperPriceDisplay = document.getElementById('paper-price-display');
-  const customAmountWrap = document.getElementById('custom-amount-wrap');
-  const customAmountInput = document.getElementById('f-custom') as HTMLInputElement | null;
+  const booksField = document.getElementById('f-books-field');
+  const cartBox = document.getElementById('cart-box');
+  const cartItems = document.getElementById('cart-items');
+  const cartCount = document.getElementById('cart-count');
+  const cartTotalValue = document.getElementById('cart-total-value');
   const addressField = document.getElementById('address-field');
 
-
   const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
+  const MAX_QTY = 10;
 
-  function updateAmountBoxes() {
-    if (!typeSelect || !paperBox || !ebookBox) return;
-    const t = typeSelect.getValue();
-    paperBox.hidden = !(t === 'paper' || t === 'both');
-    ebookBox.hidden = !(t === 'ebook' || t === 'both');
+  // ---------- Book picker (multi-select + quantity) ----------
+  type BookEntry = { title: string; price: number };
+  const bookCatalog = new Map<string, BookEntry>();
+  document.querySelectorAll<HTMLLIElement>('.book-picker-item').forEach((item) => {
+    const id = item.dataset.bookId!;
+    const price = Number(item.dataset.price || 0);
+    const title = item.querySelector('.bp-title')?.textContent?.trim() || id;
+    bookCatalog.set(id, { title, price });
+  });
 
-    if (addressField) {
-      const paperRequired = t === 'paper' || t === 'both';
-      addressField.classList.toggle('required', paperRequired);
+  // State: bookId -> quantity (only entries with qty >= 1 are "selected").
+  const cart = new Map<string, number>();
+
+  function setQty(bookId: string, qty: number, opts: { skipRender?: boolean } = {}) {
+    const clamped = Math.max(0, Math.min(MAX_QTY, Math.floor(qty)));
+    if (clamped <= 0) cart.delete(bookId);
+    else cart.set(bookId, clamped);
+
+    const item = document.querySelector<HTMLLIElement>(`.book-picker-item[data-book-id="${bookId}"]`);
+    if (item) {
+      const check = item.querySelector<HTMLInputElement>('.bp-check');
+      const stepper = item.querySelector<HTMLElement>('.bp-stepper');
+      const qtyInput = item.querySelector<HTMLInputElement>('.bp-qty');
+      if (check) check.checked = clamped > 0;
+      if (stepper) stepper.hidden = clamped <= 0;
+      if (qtyInput) qtyInput.value = String(clamped > 0 ? clamped : 1);
+      item.classList.toggle('is-selected', clamped > 0);
     }
-    updatePaperPrice();
-    updateTotal();
+    if (!opts.skipRender) renderCart();
   }
 
-  function updatePaperPrice() {
-    if (!bookSelect || !paperPriceDisplay) return;
-    const opt = bookSelect.getSelectedOption();
-    const price = opt?.getAttribute('data-paper-price');
-    const paperEmpty = document.getElementById('paper-empty');
-    const paperCurrency = document.getElementById('paper-price-currency');
-    if (price) {
-      paperPriceDisplay.textContent = new Intl.NumberFormat('vi-VN').format(parseInt(price, 10));
-      paperPriceDisplay.hidden = false;
-      if (paperCurrency) paperCurrency.hidden = false;
-      if (paperEmpty) paperEmpty.hidden = true;
-    } else {
-      paperPriceDisplay.hidden = true;
-      if (paperCurrency) paperCurrency.hidden = true;
-      if (paperEmpty) paperEmpty.hidden = false;
-    }
-    updateTotal();
+  function renderCart() {
+    if (!cartBox || !cartItems || !cartCount || !cartTotalValue) return;
+    cartItems.innerHTML = '';
+    let totalQty = 0;
+    let totalAmount = 0;
+    cart.forEach((qty, bookId) => {
+      const entry = bookCatalog.get(bookId);
+      if (!entry) return;
+      const lineTotal = entry.price * qty;
+      totalQty += qty;
+      totalAmount += lineTotal;
+      const li = document.createElement('li');
+      li.className = 'cart-item';
+      li.innerHTML = `
+        <span class="cart-item-qty">x${qty}</span>
+        <span class="cart-item-title">${entry.title}</span>
+        <span class="cart-item-total">${new Intl.NumberFormat('vi-VN').format(lineTotal)}đ</span>
+      `;
+      cartItems.appendChild(li);
+    });
+    cartCount.textContent = String(totalQty);
+    cartTotalValue.textContent = new Intl.NumberFormat('vi-VN').format(totalAmount);
+    cartBox.hidden = totalQty === 0;
   }
 
-  function updateTotal() {
-    const totalBox = document.getElementById('total-box');
-    if (!totalBox || !typeSelect || !bookSelect) return;
+  // Wire up each book row
+  document.querySelectorAll<HTMLLIElement>('.book-picker-item').forEach((item) => {
+    const id = item.dataset.bookId!;
+    const check = item.querySelector<HTMLInputElement>('.bp-check')!;
+    const minus = item.querySelector<HTMLButtonElement>('.bp-minus')!;
+    const plus = item.querySelector<HTMLButtonElement>('.bp-plus')!;
+    const qtyInput = item.querySelector<HTMLInputElement>('.bp-qty')!;
 
-    if (typeSelect.getValue() !== 'both') {
-      totalBox.hidden = true;
-      return;
-    }
-
-    const paperPrice = Number(bookSelect.getSelectedOption()?.getAttribute('data-paper-price') || 0);
-    const tierRadio = document.querySelector('input[name="ebookTier"]:checked') as HTMLInputElement | null;
-    let ebookAmount = 0;
-    if (tierRadio) {
-      ebookAmount = tierRadio.value === 'custom'
-        ? Number((customAmountInput?.value || '').replace(/[^0-9]/g, '') || 0)
-        : Number(tierRadio.value || 0);
-    }
-
-    if (paperPrice <= 0 || ebookAmount <= 0) {
-      totalBox.hidden = true;
-      return;
-    }
-
-    const nf = new Intl.NumberFormat('vi-VN');
-    const paperEl = document.getElementById('total-paper');
-    const ebookEl = document.getElementById('total-ebook');
-    const sumEl = document.getElementById('total-sum');
-    if (paperEl) paperEl.textContent = nf.format(paperPrice);
-    if (ebookEl) ebookEl.textContent = nf.format(ebookAmount);
-    if (sumEl) sumEl.textContent = nf.format(paperPrice + ebookAmount);
-    totalBox.hidden = false;
-  }
-
-  typeWrap?.addEventListener('change', updateAmountBoxes);
-  bookWrap?.addEventListener('change', updatePaperPrice);
-
-  // Ebook flow is paused (client hasn't prepared ebooks yet).
-  // The donationType field is hidden — default it to "paper" so paper-box
-  // shows automatically and validation treats this as paper-only.
-  // Remove this when Ebook is brought back.
-  typeSelect?.setValue('paper', 'Sách giấy');
-
-  // Ebook tier radio
-  document.querySelectorAll('input[name="ebookTier"]').forEach((r) => {
-    r.addEventListener('change', (e) => {
-      const v = (e.target as HTMLInputElement).value;
-      if (customAmountWrap) customAmountWrap.hidden = v !== 'custom';
-      if (v !== 'custom' && customAmountInput) customAmountInput.value = '';
-      if (v === 'custom') setTimeout(() => customAmountInput?.focus(), 50);
-      updateTotal();
+    check.addEventListener('change', () => {
+      setQty(id, check.checked ? 1 : 0);
+    });
+    minus.addEventListener('click', () => {
+      const current = cart.get(id) || 0;
+      setQty(id, current - 1);
+    });
+    plus.addEventListener('click', () => {
+      const current = cart.get(id) || 0;
+      setQty(id, current + 1);
+    });
+    qtyInput.addEventListener('input', () => {
+      const raw = qtyInput.value.replace(/[^0-9]/g, '');
+      const n = raw ? parseInt(raw, 10) : 0;
+      setQty(id, n);
+    });
+    qtyInput.addEventListener('blur', () => {
+      // If user cleared the input, restore to 1 if still checked.
+      if (!qtyInput.value && cart.has(id)) setQty(id, 1);
     });
   });
 
-  // Custom amount: format with thousand separators
-  customAmountInput?.addEventListener('input', (e) => {
-    const target = e.target as HTMLInputElement;
-    const raw = target.value.replace(/[^0-9]/g, '');
-    target.value = raw ? Number(raw).toLocaleString('en-US') : '';
-    updateTotal();
-  });
-
-  // Listen to book:select from Books.astro
+  // Listen to book:select from Books.astro — adds 1 of that book to cart and scrolls to form.
   document.addEventListener('book:select', (e: any) => {
-    const { action, bookId, bookTitle } = e.detail;
-    if (!typeSelect || !bookSelect || !typeWrap || !bookWrap) return;
-
-    const typeValue = action === 'paper' ? 'paper' : 'ebook';
-    const typeLabel = action === 'paper' ? 'Sách giấy' : 'Ebook';
-    typeSelect.setValue(typeValue, typeLabel);
-    bookSelect.setValue(bookId, bookTitle);
-    updateAmountBoxes();
-
-    [typeWrap, bookWrap].forEach((el) => {
-      el.classList.add('highlight');
-      setTimeout(() => el.classList.remove('highlight'), 1200);
-    });
+    const { bookId } = e.detail || {};
+    if (!bookId || !bookCatalog.has(bookId)) return;
+    const current = cart.get(bookId) || 0;
+    setQty(bookId, current + 1);
+    const item = document.querySelector<HTMLElement>(`.book-picker-item[data-book-id="${bookId}"]`);
+    if (item) {
+      item.classList.add('highlight');
+      setTimeout(() => item.classList.remove('highlight'), 1200);
+    }
   });
 
-  // Reset custom selects when form resets
+  // Reset wipes the cart too
   form?.addEventListener('reset', () => {
     setTimeout(() => {
-      typeSelect?.setValue('');
-      bookSelect?.setValue('');
-      updateAmountBoxes();
+      Array.from(cart.keys()).forEach((id) => setQty(id, 0, { skipRender: true }));
+      cart.clear();
+      renderCart();
     }, 0);
   });
 
@@ -591,34 +543,21 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
       firstError ??= 'phone';
     }
 
-    const type = (data.get('donationType') || '').toString();
-    if (!type) {
-      setError('donationType', 'Vui lòng chọn hình thức ủng hộ.');
-      firstError ??= 'donationType';
-    }
-
     const email = (data.get('email') || '').toString().trim();
-    const emailRequired = type === 'ebook' || type === 'both';
-    if (emailRequired && !email) {
-      setError('email', 'Vui lòng nhập email.');
-      firstError ??= 'email';
-    } else if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError('email', 'Email không hợp lệ.');
       firstError ??= 'email';
     }
 
-    const book = (data.get('book') || '').toString();
-    if (!book) {
-      setError('book', 'Vui lòng chọn cuốn sách.');
-      firstError ??= 'book';
+    if (cart.size === 0) {
+      setError('items', 'Vui lòng chọn ít nhất 1 cuốn sách.');
+      firstError ??= 'items';
     }
 
-    if (type === 'paper' || type === 'both') {
-      const address = (data.get('address') || '').toString().trim();
-      if (!address) {
-        setError('address', 'Vui lòng nhập địa chỉ nhận sách.');
-        firstError ??= 'address';
-      }
+    const address = (data.get('address') || '').toString().trim();
+    if (!address) {
+      setError('address', 'Vui lòng nhập địa chỉ nhận sách.');
+      firstError ??= 'address';
     }
 
     return firstError;
@@ -634,14 +573,14 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
     const data = new FormData(form);
     const firstError = validate(data);
     if (firstError) {
-      const field = document.querySelector(`[name="${firstError}"]`) as HTMLElement | null;
-      // Hidden inputs (custom selects) — focus their visible trigger instead
-      const focusTarget =
-        field && (field as HTMLInputElement).type === 'hidden'
-          ? (field.closest('.custom-select')?.querySelector('.cs-trigger') as HTMLElement | null)
-          : field;
+      let focusTarget: HTMLElement | null = null;
+      if (firstError === 'items') {
+        focusTarget = booksField;
+      } else {
+        focusTarget = document.querySelector(`[name="${firstError}"]`);
+      }
       focusTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      focusTarget?.focus();
+      focusTarget?.focus?.();
       return;
     }
 
@@ -651,36 +590,35 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
       submitBtn.textContent = 'Đang gửi...';
     }
 
-    const payload: Record<string, any> = {};
-    data.forEach((v, k) => (payload[k] = v));
-    // Normalize: strip thousand separators from customAmount
-    if (payload.customAmount) {
-      payload.customAmount = String(payload.customAmount).replace(/[^0-9]/g, '');
-    }
+    const items = Array.from(cart.entries()).map(([bookId, qty]) => {
+      const entry = bookCatalog.get(bookId);
+      return {
+        bookId,
+        qty,
+        title: entry?.title,
+        price: entry?.price,
+      };
+    });
+    const totalCount = items.reduce((s, it) => s + it.qty, 0);
+    const totalAmount = items.reduce((s, it) => s + (it.price || 0) * it.qty, 0);
 
-    const donationType = String(payload.donationType || '');
-    const includesPaper = donationType === 'paper' || donationType === 'both';
-    const includesEbook = donationType === 'ebook' || donationType === 'both';
-
-    const paperPrice = includesPaper
-      ? Number(bookSelect?.getSelectedOption()?.getAttribute('data-paper-price') || 0)
-      : 0;
-
-    let ebookAmount = 0;
-    if (includesEbook) {
-      const tier = String(payload.ebookTier || '');
-      ebookAmount = tier === 'custom' ? Number(payload.customAmount || 0) : Number(tier || 0);
-    }
-
-    payload.paperPrice = paperPrice;
-    payload.totalAmount = paperPrice + ebookAmount;
-
-    payload.submittedAt = new Date().toISOString();
-    payload.source = 'tang-sach-landing';
+    const payload: Record<string, any> = {
+      fullName: (data.get('fullName') || '').toString().trim(),
+      phone: (data.get('phone') || '').toString().trim(),
+      email: (data.get('email') || '').toString().trim(),
+      address: (data.get('address') || '').toString().trim(),
+      note: (data.get('note') || '').toString().trim(),
+      donationType: (data.get('donationType') || 'paper').toString(),
+      items,
+      totalCount,
+      totalAmount,
+      submittedAt: new Date().toISOString(),
+      source: 'tang-sach-landing',
+    };
 
     // Tracking
     if (typeof (window as any).fbq === 'function') {
-      (window as any).fbq('track', 'Donate', { content_name: payload.book, value: payload.customAmount || 0 });
+      (window as any).fbq('track', 'Donate', { num_items: totalCount, value: totalAmount });
     }
     if (typeof (window as any).gtag === 'function') {
       (window as any).gtag('event', 'donation_submit', payload);
@@ -716,8 +654,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
       // Show success
       const successMsg = document.getElementById('success-msg');
       if (successMsg) {
-        const bookLabel = bookSelect?.getSelectedOption()?.textContent || '';
-        successMsg.textContent = `Cảm ơn ${payload.fullName}! Quỹ đã ghi nhận ủng hộ "${bookLabel}" của bạn.`;
+        successMsg.textContent = `Cảm ơn ${payload.fullName}! Quỹ đã ghi nhận đơn ủng hộ ${totalCount} cuốn sách của bạn.`;
       }
       const successModal = document.getElementById('success-modal');
       if (successModal) {
@@ -726,7 +663,6 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
         document.body.style.overflow = 'hidden';
       }
       form.reset();
-      updateAmountBoxes();
     } catch (err) {
       console.error(err);
       alert('Có lỗi xảy ra khi gửi. Vui lòng thử lại hoặc liên hệ Quỹ qua hotline 0933 039 678.');
@@ -1574,5 +1510,261 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
     .payment-card { padding: 22px; }
     .qr-img-wrap { width: 160px; height: 160px; }
     .tier-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ---- Book picker (multi-select + quantity) ---- */
+  .book-picker-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .book-picker-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .book-picker {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    overflow: hidden;
+  }
+  .book-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color 0.18s ease;
+  }
+  .book-picker-item:last-child {
+    border-bottom: none;
+  }
+  .book-picker-item.is-selected {
+    background-color: var(--color-primary-soft, rgba(245, 138, 44, 0.08));
+  }
+  .book-picker-item.highlight {
+    background-color: var(--color-primary-soft, rgba(245, 138, 44, 0.18));
+  }
+  .bp-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+  }
+  /* Override .field input default styles for checkbox + number stepper */
+  .book-picker .bp-check {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+    box-shadow: none;
+  }
+  .bp-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+  .bp-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-text-ink);
+    line-height: 1.3;
+  }
+  .bp-price {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .bp-stepper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    overflow: hidden;
+  }
+  .bp-minus,
+  .bp-plus {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-ink);
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+  .bp-minus:hover,
+  .bp-plus:hover {
+    background-color: var(--color-bg-alt);
+  }
+  .book-picker .bp-qty {
+    width: 36px;
+    height: 32px;
+    padding: 0;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    color: var(--color-text-ink);
+    font-variant-numeric: tabular-nums;
+    -moz-appearance: textfield;
+    box-shadow: none;
+  }
+  .book-picker .bp-qty::-webkit-outer-spin-button,
+  .book-picker .bp-qty::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .book-picker .bp-qty:focus {
+    outline: none;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* ---- Cart summary ---- */
+  .cart-box {
+    background: var(--color-paper);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+  }
+  .cart-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cart-head {
+    display: flex;
+    align-items: center;
+  }
+  .cart-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-primary-dark);
+  }
+  .cart-eyebrow .ornament {
+    font-size: 14px;
+    color: var(--color-primary);
+  }
+  .cart-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  /* :global needed — these <li> elements are created via JS, so they don't
+     receive Astro's data-astro-cid scope attribute. */
+  :global(.cart-item) {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--color-text);
+  }
+  :global(.cart-item-qty) {
+    color: var(--color-text-muted);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    min-width: 28px;
+  }
+  :global(.cart-item-title) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  :global(.cart-item-total) {
+    font-weight: 600;
+    color: var(--color-text-ink);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .cart-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-top: 1px dashed var(--color-rule);
+    padding-top: 10px;
+  }
+  .cart-total-label {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .cart-total-amount {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .cart-total-value {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--color-text-ink);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .cart-total-currency {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--color-primary-dark);
+  }
+
+  @media (max-width: 560px) {
+    .book-picker-item {
+      padding: 12px 12px;
+      gap: 10px;
+    }
+    .bp-row { gap: 10px; }
+    .bp-title { font-size: 14px; }
+    .bp-stepper {
+      gap: 0;
+    }
+    .book-picker .bp-minus,
+    .book-picker .bp-plus {
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+    }
+    .book-picker .bp-qty {
+      width: 44px;
+      height: 40px;
+      font-size: 16px;
+    }
+    .cart-box { padding: 14px 16px; }
+    .cart-item { font-size: 14px; }
+    .cart-total-label { font-size: 12px; }
+    .cart-total-value { font-size: 22px; }
   }
 </style>

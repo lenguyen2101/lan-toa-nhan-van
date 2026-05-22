@@ -49,7 +49,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
                 data-book-title={book.title}
                 data-paper-price={book.paperPrice}
               >
-                <span class="btn-label">Sách giấy</span>
+                <span class="btn-label">Chọn sách</span>
                 <span class="btn-price">{fmt(book.paperPrice)}</span>
               </button>
               {book.previewUrl && (
